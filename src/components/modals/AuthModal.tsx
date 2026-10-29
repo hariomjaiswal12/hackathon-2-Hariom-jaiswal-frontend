@@ -375,7 +375,7 @@ export const AuthModal: React.FC = () => {
       } else {
         setErrorMsg(
           res.error?.includes('connect') || res.error?.includes('Failed')
-            ? 'CompanyIQ backend service or MongoDB database is unreachable. Please ensure the backend is running at http://localhost:5000.'
+            ? 'The CompanyIQ API is unreachable. Please try again shortly.'
             : res.error || 'Failed to authenticate demo session.'
         );
       }

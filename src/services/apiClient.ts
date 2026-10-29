@@ -1,6 +1,7 @@
 /**
- * API Client for CompanyIQ Backend
- * Base URL: VITE_API_URL or http://localhost:5000/api/v1
+ * API Client for CompanyIQ Backend.
+ * VITE_API_URL is the full API base, including /api/v1.
+ * Local development falls back to the local API only. Production builds do not.
  */
 
 import {
@@ -24,7 +25,14 @@ import {
   WhatIfResult,
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+function resolveApiBaseUrl(): string {
+  const configured = import.meta.env.VITE_API_URL?.trim().replace(/\/$/, '');
+  if (configured) return configured;
+  if (import.meta.env.DEV) return 'http://localhost:5000/api/v1';
+  return '';
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -92,6 +100,17 @@ class ApiClient {
   }
 
   async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+    if (!API_BASE_URL) {
+      return {
+        success: false,
+        data: null as T,
+        error: {
+          code: 'API_URL_MISSING',
+          message: 'VITE_API_URL is not configured for this build.',
+        },
+      };
+    }
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),

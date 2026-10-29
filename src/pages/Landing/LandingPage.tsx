@@ -67,12 +67,12 @@ export const LandingPage: React.FC = () => {
         navigate('/dashboard');
       } else {
         openAuthModal(
-          res.error || 'Failed to authenticate demo session. Please ensure CompanyIQ backend is running at http://localhost:5000.'
+          res.error || 'Failed to authenticate the demo session. The CompanyIQ API is unavailable.'
         );
       }
     } catch (err: any) {
       openAuthModal(
-        err.message || 'Unable to connect to CompanyIQ backend. Please verify that the server is online at http://localhost:5000.'
+        err.message || 'Unable to connect to the CompanyIQ API. Please try again shortly.'
       );
     } finally {
       setDemoLoading(false);
