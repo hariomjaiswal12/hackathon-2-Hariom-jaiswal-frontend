@@ -176,12 +176,16 @@ class ApiClient {
       const json = await response.json();
       return json;
     } catch (err: any) {
+      const raw = typeof err?.message === 'string' ? err.message : '';
+      const unreachable = raw === 'Failed to fetch' || raw.includes('NetworkError') || raw.includes('Load failed');
       return {
         success: false,
         data: null as any,
         error: {
           code: 'NETWORK_ERROR',
-          message: err.message || 'Failed to connect to CompanyIQ backend API',
+          message: unreachable
+            ? 'Unable to reach the CompanyIQ API. Please try again shortly.'
+            : raw || 'Failed to connect to CompanyIQ backend API',
         },
       };
     }

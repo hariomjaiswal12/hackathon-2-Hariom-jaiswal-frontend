@@ -88,65 +88,92 @@ export const AuthModal: React.FC = () => {
 
   // Google OAuth states & integration
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [officialGoogleReady, setOfficialGoogleReady] = useState(false);
   const googleBtnContainerRef = useRef<HTMLDivElement>(null);
+  const loginGoogleRef = useRef(loginGoogle);
+  const closeAuthModalRef = useRef(closeAuthModal);
+  const navigateRef = useRef(navigate);
+  loginGoogleRef.current = loginGoogle;
+  closeAuthModalRef.current = closeAuthModal;
+  navigateRef.current = navigate;
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
   const isGoogleConfigured =
     Boolean(googleClientId) &&
     googleClientId !== 'your_google_oauth_client_id' &&
     !googleClientId.startsWith('your_');
 
-  // Initialize Google Identity Services (GIS)
+  // Initialize Google Identity Services once per open modal, and render a single official button.
   useEffect(() => {
-    if (!isAuthModalOpen || (mode !== 'login' && mode !== 'register')) return;
-    if (!isGoogleConfigured) return;
-
-    if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
-      try {
-        (window as any).google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: async (response: { credential?: string }) => {
-            if (!response.credential) {
-              setErrorMsg('Google did not return an authentication credential.');
-              return;
-            }
-            setGoogleLoading(true);
-            setErrorMsg(null);
-            try {
-              const res = await loginGoogle(response.credential);
-              if (res.success) {
-                setSuccessMsg('Authenticated with Google successfully! Opening dashboard...');
-                setTimeout(() => {
-                  closeAuthModal();
-                  navigate('/dashboard');
-                }, 600);
-              } else {
-                setErrorMsg(res.error || 'Google authentication failed.');
-              }
-            } catch (err: any) {
-              setErrorMsg(err.message || 'Error connecting to CompanyIQ server.');
-            } finally {
-              setGoogleLoading(false);
-            }
-          },
-          auto_select: false,
-          cancel_on_tap_outside: true,
-        });
-
-        if (googleBtnContainerRef.current) {
-          (window as any).google.accounts.id.renderButton(googleBtnContainerRef.current, {
-            theme: document.documentElement.classList.contains('dark') ? 'filled_black' : 'outline',
-            size: 'large',
-            width: googleBtnContainerRef.current.clientWidth || 380,
-            text: mode === 'register' ? 'signup_with' : 'continue_with',
-            shape: 'rectangular',
-            logo_alignment: 'left',
-          });
-        }
-      } catch (err) {
-        console.warn('Google Identity Services notice:', err);
-      }
+    if (!isAuthModalOpen || (mode !== 'login' && mode !== 'register') || !isGoogleConfigured) {
+      setOfficialGoogleReady(false);
+      return;
     }
-  }, [isAuthModalOpen, mode, isGoogleConfigured, googleClientId, loginGoogle, closeAuthModal, navigate]);
+
+    let cancelled = false;
+    let timer = 0;
+
+    const mountOfficialButton = () => {
+      const gis = (window as any).google?.accounts?.id;
+      const container = googleBtnContainerRef.current;
+      if (!gis || !container) return false;
+
+      container.replaceChildren();
+      gis.initialize({
+        client_id: googleClientId,
+        callback: async (response: { credential?: string }) => {
+          if (!response.credential) {
+            setErrorMsg('Google did not return an authentication credential.');
+            return;
+          }
+          setGoogleLoading(true);
+          setErrorMsg(null);
+          try {
+            const res = await loginGoogleRef.current(response.credential);
+            if (res.success) {
+              setSuccessMsg('Authenticated with Google successfully! Opening dashboard...');
+              setTimeout(() => {
+                closeAuthModalRef.current();
+                navigateRef.current('/dashboard');
+              }, 600);
+            } else {
+              setErrorMsg(res.error || 'Google authentication failed.');
+            }
+          } catch (err: any) {
+            setErrorMsg(err.message || 'Unable to reach the CompanyIQ API. Please try again shortly.');
+          } finally {
+            setGoogleLoading(false);
+          }
+        },
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+      gis.renderButton(container, {
+        theme: document.documentElement.classList.contains('dark') ? 'filled_black' : 'outline',
+        size: 'large',
+        width: Math.max(container.clientWidth, 320),
+        text: mode === 'register' ? 'signup_with' : 'continue_with',
+        shape: 'rectangular',
+        logo_alignment: 'left',
+      });
+      if (!cancelled) setOfficialGoogleReady(true);
+      return true;
+    };
+
+    if (!mountOfficialButton()) {
+      let attempts = 0;
+      timer = window.setInterval(() => {
+        attempts += 1;
+        if (mountOfficialButton() || attempts >= 25) window.clearInterval(timer);
+      }, 200);
+    }
+
+    return () => {
+      cancelled = true;
+      if (timer) window.clearInterval(timer);
+      googleBtnContainerRef.current?.replaceChildren();
+      setOfficialGoogleReady(false);
+    };
+  }, [isAuthModalOpen, mode, isGoogleConfigured, googleClientId]);
 
   const handleCustomGoogleClick = () => {
     if (!isGoogleConfigured) {
@@ -881,28 +908,33 @@ export const AuthModal: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Google Sign-In Official / Custom Button */}
-                <div ref={googleBtnContainerRef} className="w-full flex justify-center empty:hidden mb-2" />
-                <button
-                  type="button"
-                  onClick={handleCustomGoogleClick}
-                  disabled={loading || googleLoading}
-                  aria-label={mode === 'register' ? 'Sign up with Google' : 'Continue with Google'}
-                  className="w-full py-2.5 px-4 bg-white dark:bg-[#131C31] hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B] text-[#14213D] dark:text-[#F8FAFC] border border-[#CBD5E1] dark:border-[#334155] rounded-[6px] text-[13px] font-semibold flex items-center justify-center gap-2.5 shadow-xs hover:shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group focus:outline-none focus:ring-2 focus:ring-[#6D4AFF]/40"
-                >
-                  {googleLoading ? (
-                    <Loader2 size={16} className="animate-spin text-[#6D4AFF]" />
-                  ) : (
-                    <GoogleIcon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-105" />
-                  )}
-                  <span>
-                    {googleLoading
-                      ? 'Connecting to Google...'
-                      : mode === 'register'
-                      ? 'Sign up with Google'
-                      : 'Continue with Google'}
-                  </span>
-                </button>
+                {/* One Google button: the official GIS button when it is available, otherwise the styled fallback. */}
+                <div
+                  ref={googleBtnContainerRef}
+                  className={`w-full flex justify-center ${officialGoogleReady ? '' : 'hidden'}`}
+                />
+                {!officialGoogleReady && (
+                  <button
+                    type="button"
+                    onClick={handleCustomGoogleClick}
+                    disabled={loading || googleLoading}
+                    aria-label={mode === 'register' ? 'Sign up with Google' : 'Continue with Google'}
+                    className="w-full py-2.5 px-4 bg-white dark:bg-[#131C31] hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B] text-[#14213D] dark:text-[#F8FAFC] border border-[#CBD5E1] dark:border-[#334155] rounded-[6px] text-[13px] font-semibold flex items-center justify-center gap-2.5 shadow-xs hover:shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group focus:outline-none focus:ring-2 focus:ring-[#6D4AFF]/40"
+                  >
+                    {googleLoading ? (
+                      <Loader2 size={16} className="animate-spin text-[#6D4AFF]" />
+                    ) : (
+                      <GoogleIcon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-105" />
+                    )}
+                    <span>
+                      {googleLoading
+                        ? 'Connecting to Google...'
+                        : mode === 'register'
+                        ? 'Sign up with Google'
+                        : 'Continue with Google'}
+                    </span>
+                  </button>
+                )}
               </div>
             )}
 
