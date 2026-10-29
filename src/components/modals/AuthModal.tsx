@@ -90,13 +90,14 @@ export const AuthModal: React.FC = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [officialGoogleReady, setOfficialGoogleReady] = useState(false);
   const googleBtnContainerRef = useRef<HTMLDivElement>(null);
+  const gisInitializedFor = useRef('');
   const loginGoogleRef = useRef(loginGoogle);
   const closeAuthModalRef = useRef(closeAuthModal);
   const navigateRef = useRef(navigate);
   loginGoogleRef.current = loginGoogle;
   closeAuthModalRef.current = closeAuthModal;
   navigateRef.current = navigate;
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+  const googleClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
   const isGoogleConfigured =
     Boolean(googleClientId) &&
     googleClientId !== 'your_google_oauth_client_id' &&
@@ -118,35 +119,38 @@ export const AuthModal: React.FC = () => {
       if (!gis || !container) return false;
 
       container.replaceChildren();
-      gis.initialize({
-        client_id: googleClientId,
-        callback: async (response: { credential?: string }) => {
-          if (!response.credential) {
-            setErrorMsg('Google did not return an authentication credential.');
-            return;
-          }
-          setGoogleLoading(true);
-          setErrorMsg(null);
-          try {
-            const res = await loginGoogleRef.current(response.credential);
-            if (res.success) {
-              setSuccessMsg('Authenticated with Google successfully! Opening dashboard...');
-              setTimeout(() => {
-                closeAuthModalRef.current();
-                navigateRef.current('/dashboard');
-              }, 600);
-            } else {
-              setErrorMsg(res.error || 'Google authentication failed.');
+      if (gisInitializedFor.current !== googleClientId) {
+        gis.initialize({
+          client_id: googleClientId,
+          callback: async (response: { credential?: string }) => {
+            if (!response.credential) {
+              setErrorMsg('Google did not return an authentication credential.');
+              return;
             }
-          } catch (err: any) {
-            setErrorMsg(err.message || 'Unable to reach the CompanyIQ API. Please try again shortly.');
-          } finally {
-            setGoogleLoading(false);
-          }
-        },
-        auto_select: false,
-        cancel_on_tap_outside: true,
-      });
+            setGoogleLoading(true);
+            setErrorMsg(null);
+            try {
+              const res = await loginGoogleRef.current(response.credential);
+              if (res.success) {
+                setSuccessMsg('Authenticated with Google successfully! Opening dashboard...');
+                setTimeout(() => {
+                  closeAuthModalRef.current();
+                  navigateRef.current('/dashboard');
+                }, 600);
+              } else {
+                setErrorMsg(res.error || 'Google authentication failed.');
+              }
+            } catch (err: any) {
+              setErrorMsg(err.message || 'Unable to reach the CompanyIQ API. Please try again shortly.');
+            } finally {
+              setGoogleLoading(false);
+            }
+          },
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+        gisInitializedFor.current = googleClientId;
+      }
       gis.renderButton(container, {
         theme: document.documentElement.classList.contains('dark') ? 'filled_black' : 'outline',
         size: 'large',
@@ -174,6 +178,33 @@ export const AuthModal: React.FC = () => {
       setOfficialGoogleReady(false);
     };
   }, [isAuthModalOpen, mode, isGoogleConfigured, googleClientId]);
+
+  useEffect(() => {
+    if (!isAuthModalOpen) return;
+    const originalError = console.error.bind(console);
+    const originalLog = console.log.bind(console);
+    const report = (...args: unknown[]) => {
+      const text = args.map((item) => (typeof item === 'string' ? item : '')).join(' ');
+      if (text.includes('origin is not allowed') || text.includes('origin_mismatch')) {
+        setGoogleLoading(false);
+        setErrorMsg(
+          `Google blocked sign-in for ${window.location.origin}. Add that exact origin, with no path or trailing slash, under Authorized JavaScript origins for this Web client, then reload.`
+        );
+      }
+    };
+    console.error = (...args: unknown[]) => {
+      report(...args);
+      originalError(...args);
+    };
+    console.log = (...args: unknown[]) => {
+      report(...args);
+      originalLog(...args);
+    };
+    return () => {
+      console.error = originalError as typeof console.error;
+      console.log = originalLog as typeof console.log;
+    };
+  }, [isAuthModalOpen]);
 
   const handleCustomGoogleClick = () => {
     if (!isGoogleConfigured) {
