@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { AuthModal } from '../../components/modals/AuthModal';
+import { PolaroidLineCarousel, type PolaroidSlide } from '../../components/ui/polaroid-line-carousel';
 import {
   Search,
   Sparkles,
@@ -32,6 +33,72 @@ const SOURCE_CARDS = [
   { name: 'Indeed', desc: 'Job reviews' },
   { name: 'LinkedIn', desc: 'Professional signals' },
   { name: 'The Muse', desc: 'Career advice' },
+];
+
+const POLAROID_SLIDES: PolaroidSlide[] = [
+  {
+    image: '/images/companyiq/linkedin-research.webp',
+    title: 'LinkedIn — Professional Signals',
+    caption: 'Company overview, headcount velocity, leadership signals & alumni networks.',
+    note: 'LinkedIn Signals',
+    alt: 'LinkedIn Company Research and Professional Signals',
+  },
+  {
+    image: '/images/companyiq/ambitionbox-reviews.webp',
+    title: 'AmbitionBox — Employee Reviews',
+    caption: 'Verified employee reviews, workplace culture ratings, and salary satisfaction.',
+    note: 'AmbitionBox Reviews',
+    alt: 'AmbitionBox Verified Employee Reviews and Workplace Ratings',
+  },
+  {
+    image: '/images/companyiq/glassdoor-insights.webp',
+    title: 'Glassdoor — Ratings & Reviews',
+    caption: '4.4★ overall ratings, 94% CEO approval, and verified pros & cons breakdown.',
+    note: 'Glassdoor Ratings',
+    alt: 'Glassdoor Company Ratings, CEO Approval, and Pros/Cons',
+  },
+  {
+    image: '/images/companyiq/indeed-careers.webp',
+    title: 'Indeed — Career Opportunities',
+    caption: 'Active hiring requisitions, compensation ranges, and recruitment demand trends.',
+    note: 'Indeed Requisitions',
+    alt: 'Indeed Active Requisitions, Salary Data, and Hiring Demand',
+  },
+  {
+    image: '/images/companyiq/levelsfyi-salaries.webp',
+    title: 'Levels.fyi — Salary Intelligence',
+    caption: 'Base, RSU stock, bonus breakdowns, and verified level-by-level compensation.',
+    note: 'Levels.fyi Salaries',
+    alt: 'Levels.fyi Verified Compensation Bands and Leveling Matrix',
+  },
+  {
+    image: '/images/companyiq/teamblind-discussions.webp',
+    title: 'TeamBlind — Anonymous Insights',
+    caption: 'Anonymous verified tech employee discussions, workplace culture, and sentiment.',
+    note: 'Blind Discussions',
+    alt: 'TeamBlind Anonymous Employee Discussions and Workplace Culture',
+  },
+  {
+    image: '/images/companyiq/reddit-community.webp',
+    title: 'Reddit — Community Discussions',
+    caption: 'r/cscareerquestions and tech community unfiltered career advice & consensus.',
+    note: 'Reddit Community',
+    alt: 'Reddit r/cscareerquestions Tech Career Community Consensus',
+  },
+  {
+    image: '/images/companyiq/comparably-culture.webp',
+    title: 'Comparably — Culture Insights',
+    caption: 'Workplace culture scores, executive team approval, and diversity benchmarks.',
+    note: 'Comparably Culture',
+    alt: 'Comparably Culture Score, Leadership Ratings, and Diversity',
+  },
+  {
+    image: '/images/companyiq/themuse-advice.webp',
+    title: 'The Muse — Career Guidance',
+    caption: 'Company culture deep dives, employee stories, and real-world interview coaching.',
+    note: 'The Muse Guidance',
+    alt: 'The Muse Company Culture Deep Dives and Interview Coaching',
+  },
 ];
 
 const SEARCH_CHIPS = ['Google', 'Microsoft', 'Adobe', 'Amazon', 'Apple', 'Netflix', 'Stripe', 'OpenAI'];
@@ -243,8 +310,8 @@ export const LandingPage: React.FC = () => {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrollY > 20
-            ? 'h-[62px] bg-[#070B14]/90 backdrop-blur-md border-b border-slate-800/80 shadow-lg shadow-black/30'
-            : 'h-[70px] bg-[#070B14]/60 backdrop-blur-xs border-b border-white/5'
+            ? 'h-[62px] bg-[#070B14]/90 backdrop-blur-md shadow-lg shadow-black/30'
+            : 'h-[70px] bg-[#070B14]/60 backdrop-blur-xs'
         }`}
       >
         <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
@@ -385,87 +452,126 @@ export const LandingPage: React.FC = () => {
       </header>
 
       {/* =========================================================================
-          SECTION 2: HERO SECTION
+          SECTION 2: FULL-SCREEN IMMERSIVE POLAROID LINE CAROUSEL GALLERY
       ========================================================================= */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 px-6 max-w-7xl mx-auto overflow-hidden">
-        {/* Ambient Radial Glow Behind Dashboard */}
+      <section className="relative w-full h-[100svh] min-h-[680px] max-h-[960px] flex flex-col justify-between pt-[72px] pb-1 overflow-hidden bg-[#070B14]">
+        {/* Cinematic Ambient Glows in Deep Black Canvas */}
         <div
-          className="absolute top-20 right-0 w-[600px] h-[600px] rounded-full pointer-events-none -z-10 opacity-60"
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[1100px] h-[650px] rounded-full pointer-events-none -z-10 opacity-40 blur-3xl"
           style={{
             background:
-              'radial-gradient(circle, rgba(59, 130, 246, 0.16) 0%, rgba(99, 102, 241, 0.08) 45%, transparent 70%)',
+              'radial-gradient(ellipse at center, rgba(37, 99, 235, 0.22) 0%, rgba(99, 102, 241, 0.12) 40%, rgba(139, 92, 246, 0.05) 60%, transparent 75%)',
           }}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          {/* Left Column: Hero Typography & CTAs */}
-          <div
-            className={`lg:col-span-5 space-y-6 transition-all duration-700 transform ${
-              heroMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-            }`}
-          >
-            {/* Pill Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-400 text-[11px] font-semibold tracking-wider uppercase">
-              <Sparkles size={12} className="text-blue-400" />
-              <span>AI-Powered Company Research</span>
-            </div>
-
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-[62px] font-bold text-white tracking-tight leading-[1.06]">
-              Know the
-              <br />
-              Company
-              <br />
-              <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
-                Before You
-              </span>
-              <br />
-              Join It.
-            </h1>
-
-            {/* Supporting Copy */}
-            <p className="text-slate-400 text-base sm:text-[17px] leading-relaxed max-w-lg">
-              CompanyIQ helps users research companies, understand employee feedback, compare
-              companies, and make better-informed career decisions.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-3.5 pt-2">
-              <button
-                onClick={() => navigate('/explore')}
-                className="px-6 py-3.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm sm:text-base flex items-center gap-2 shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
-              >
-                <span>Explore Companies</span>
-                <ArrowRight size={16} />
-              </button>
-
-              <button
-                onClick={handleExploreWithDemo}
-                disabled={demoLoading}
-                className="px-6 py-3.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-purple-300 hover:text-purple-200 border border-purple-500/40 font-semibold text-sm sm:text-base flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:opacity-50"
-              >
-                <Sparkles size={16} className="text-purple-400" />
-                <span>{demoLoading ? 'Starting Demo...' : 'Explore with Demo Account'}</span>
-              </button>
-
-              <a
-                href="#how-it-works"
-                className="px-5 py-3.5 rounded-lg bg-slate-800/40 hover:bg-slate-700/60 text-slate-300 border border-slate-700/60 font-semibold text-sm sm:text-base flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer no-underline"
-              >
-                <span>See How It Works</span>
-              </a>
-            </div>
-
-            {/* Proof subtext */}
-            <div className="pt-2 flex items-center gap-2 text-xs text-slate-400">
-              <CheckCircle2 size={14} className="text-blue-400" />
-              <span>Free to research · No credit card required</span>
-            </div>
+        {/* TOP: Section Header with Problem Statement */}
+        <div className="w-full max-w-4xl mx-auto px-6 text-center space-y-2 z-10 pt-2 shrink-0">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-400 text-[10.5px] sm:text-[11px] font-semibold tracking-widest uppercase shadow-xs">
+            <Sparkles size={12} className="text-blue-400" />
+            <span>THE PROBLEM WITH COMPANY RESEARCH</span>
           </div>
 
-          {/* Right Column: Hero Dashboard with 3D Tilt & Parallax */}
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-extrabold text-white tracking-tight leading-[1.12]">
+            Company Research Is{' '}
+            <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
+              Scattered Everywhere.
+            </span>
+          </h1>
+
+          <p className="text-slate-300 text-xs sm:text-sm md:text-[15px] leading-relaxed max-w-xl mx-auto font-normal">
+            From professional networks to salary insights and employee reviews, job seekers visit
+            multiple platforms to understand a single company.
+          </p>
+        </div>
+
+        {/* CENTER & BOTTOM: Full-Screen Hanging Polaroid Gallery spanning full viewport width */}
+        <div className="relative w-full flex-1 min-h-0 my-1">
+          <PolaroidLineCarousel
+            slides={POLAROID_SLIDES}
+            height="100%"
+            cardWidth={330}
+            sag={50}
+            swing={1}
+            autoplay={4500}
+            string="#94A3B8"
+            background="transparent"
+            ink="#F8FAFC"
+            className="w-full h-full"
+          />
+        </div>
+      </section>
+
+      {/* =========================================================================
+          SECTION 2B: TRANSITION TO COMPANYIQ SOLUTION
+      ========================================================================= */}
+      <section className="relative w-full py-16 px-6 bg-gradient-to-b from-[#070B14] via-[#0B1120] to-[#070B14]">
+        <div className="max-w-4xl mx-auto text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 text-[11px] font-semibold tracking-wider uppercase">
+            <Layers size={13} className="text-indigo-400" />
+            <span>AI-POWERED UNIFIED INTELLIGENCE</span>
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-white tracking-tight leading-tight">
+            Nine Platforms. Countless Insights.{' '}
+            <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
+              One CompanyIQ.
+            </span>
+          </h2>
+
+          <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
+            CompanyIQ brings scattered company information together, helping you explore workplace
+            culture, employee reviews, salaries, career opportunities, and company intelligence in
+            one place.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
+            <button
+              onClick={() => navigate('/explore')}
+              className="px-7 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm sm:text-base flex items-center gap-2 shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
+            >
+              <span>Explore CompanyIQ</span>
+              <ArrowRight size={17} />
+            </button>
+
+            <button
+              onClick={handleExploreWithDemo}
+              disabled={demoLoading}
+              className="px-6 py-3.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/50 text-purple-300 hover:text-purple-200 border border-purple-800/60 font-semibold text-sm sm:text-base flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:opacity-50"
+            >
+              <Sparkles size={15} className="text-purple-400" />
+              <span>{demoLoading ? 'Starting Demo...' : 'Explore with Demo Account'}</span>
+            </button>
+          </div>
+
+          <div className="pt-2 flex items-center justify-center gap-2 text-xs text-slate-400">
+            <CheckCircle2 size={14} className="text-blue-400" />
+            <span>Free to research · No credit card required</span>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          SECTION 2C: LIVE SYNTHESIZED COMPANY INTELLIGENCE SHOWCASE
+      ========================================================================= */}
+      <section className="relative py-20 px-6 max-w-7xl mx-auto overflow-hidden">
+        {/* Live Synthesized Company Intelligence Showcase */}
+        <div className="mt-8 max-w-5xl mx-auto">
+          <div className="text-center mb-8 space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[11px] font-semibold tracking-wider uppercase">
+              <Layers size={13} className="text-indigo-400" />
+              <span>Unified Intelligence Showcase</span>
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              One Consolidated View · Zero Tab Switching
+            </h3>
+            <p className="text-slate-400 text-sm max-w-xl mx-auto">
+              How CompanyIQ unifies signals from LinkedIn, AmbitionBox, Glassdoor, Levels.fyi, and
+              Blind into actionable corporate clarity.
+            </p>
+          </div>
+
           <div
-            className={`lg:col-span-7 relative transition-all duration-1000 delay-200 transform ${
+            className={`transition-all duration-1000 delay-200 transform ${
               heroMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
             }`}
             onMouseMove={handleHeroMouseMove}
@@ -480,10 +586,10 @@ export const LandingPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-blue-500" />
                   <span className="font-semibold text-slate-300 uppercase tracking-wider">
-                    Company Overview
+                    Synthesized Company Intelligence
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-400">Updated 2 days ago</span>
+                <span className="text-[11px] text-slate-400">Multi-source verified · Live telemetry</span>
               </div>
 
               {/* Company Logo, Title, and Overall Score */}
@@ -686,12 +792,11 @@ export const LandingPage: React.FC = () => {
                   organizational changes have impacted perception of long-term job stability.
                 </p>
                 <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex flex-wrap items-center justify-between text-[11px] text-slate-400">
-                  <span>Sources: Glassdoor (5.2k) · LinkedIn (3.1k) · AmbitionBox (4.1k)</span>
+                  <span>Sources: Glassdoor (5.2k) · LinkedIn (3.1k) · AmbitionBox (4.1k) · Levels.fyi</span>
                   <span className="text-slate-400 font-medium">Freshness: 2 days ago</span>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
 
