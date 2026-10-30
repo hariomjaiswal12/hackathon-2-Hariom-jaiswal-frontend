@@ -70,7 +70,7 @@ const CAROUSEL_STYLES = `
 .pl-root {
   position: relative;
   width: 100%;
-  min-height: 520px;
+  min-height: 460px;
   overflow: hidden;
   background: var(--pl-bg, transparent);
   color: var(--pl-ink, #F8FAFC);
@@ -105,27 +105,27 @@ const CAROUSEL_STYLES = `
   position: absolute;
   left: 0;
   top: 0;
-  width: var(--pl-cw, 340px);
+  width: var(--pl-cw, 280px);
   transform-origin: 50% 0;
   will-change: transform;
   cursor: inherit;
 }
 .pl-print {
-  margin-top: 10px;
+  margin-top: 8px;
   background: #FDFBF7;
-  padding: 13px 13px 8px;
+  padding: 10px 10px 8px;
   border-radius: 6px;
-  box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.45), 0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.5), 0 20px 40px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.14);
   transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.5s ease, box-shadow 0.5s ease, opacity 0.5s ease;
 }
 .pl-card[data-on="0"] .pl-print {
   transform: scale(0.88);
-  filter: saturate(0.6) brightness(0.82);
+  filter: saturate(0.65) brightness(0.85);
   opacity: 0.72;
 }
 .pl-card[data-on="1"] .pl-print {
-  transform: scale(1.05);
-  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.6), 0 35px 80px -15px rgba(37, 99, 235, 0.45), 0 0 0 2px rgba(96, 165, 250, 0.4);
+  transform: scale(1.04);
+  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.65), 0 30px 70px -12px rgba(37, 99, 235, 0.45), 0 0 0 2px rgba(96, 165, 250, 0.4);
   filter: saturate(1.05) brightness(1.02);
   opacity: 1;
 }
@@ -148,16 +148,16 @@ const CAROUSEL_STYLES = `
   pointer-events: none;
 }
 .pl-note {
-  height: 48px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 8px;
-  font: italic 600 16px/1.1 ui-serif, Georgia, Cambria, 'Times New Roman', serif;
+  text-align: center;
+  padding: 5px 6px 6px;
+  font: 600 clamp(11.5px, 1.05vw, 13.5px)/1.25 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #0F172A;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
   letter-spacing: -0.01em;
 }
 .pl-peg {
@@ -165,7 +165,7 @@ const CAROUSEL_STYLES = `
   left: 50%;
   top: 0;
   width: 13px;
-  height: 30px;
+  height: 28px;
   margin-left: -6.5px;
   border-radius: 3px;
   background: linear-gradient(90deg, #9C7142 0%, #D4AF7A 35%, #F0D5AA 50%, #C49A62 70%, #8A5D32 100%);
@@ -176,7 +176,7 @@ const CAROUSEL_STYLES = `
   content: '';
   position: absolute;
   left: 5px;
-  top: 10px;
+  top: 9px;
   width: 2.5px;
   height: 9px;
   background: rgba(45, 30, 15, 0.75);
@@ -187,26 +187,30 @@ const CAROUSEL_STYLES = `
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 28px clamp(16px, 4vw, 56px) 20px;
-  background: linear-gradient(to top, rgba(7, 11, 20, 0.95) 0%, rgba(7, 11, 20, 0.7) 60%, transparent 100%);
+  padding: 8px clamp(16px, 3.5vw, 44px) 12px;
+  background: linear-gradient(to top, rgba(7, 11, 20, 0.75) 0%, transparent 100%);
   display: flex;
   align-items: center;
-  gap: clamp(12px, 2vw, 24px);
+  gap: clamp(10px, 1.8vw, 20px);
   cursor: default;
   z-index: 30;
+  pointer-events: none;
+}
+.pl-bar > * {
+  pointer-events: auto;
 }
 .pl-cap {
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  padding-bottom: 0.15em;
+  padding-bottom: 0.1em;
 }
 .pl-cap > * {
   display: block;
   animation: pl-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .pl-title {
-  font: 800 clamp(19px, 2.4vw, 26px)/1.2 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font: 700 clamp(15px, 1.6vw, 20px)/1.2 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #FFFFFF;
   white-space: nowrap;
   overflow: hidden;
@@ -214,19 +218,19 @@ const CAROUSEL_STYLES = `
   letter-spacing: -0.02em;
 }
 .pl-sub {
-  margin-top: 4px;
-  font: 400 clamp(13px, 1.3vw, 15px)/1.5 ui-sans-serif, system-ui, sans-serif;
+  margin-top: 2px;
+  font: 400 clamp(11.5px, 1vw, 13px)/1.4 ui-sans-serif, system-ui, sans-serif;
   color: #94A3B8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .pl-count {
-  font: 600 13px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  letter-spacing: 0.14em;
+  font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.12em;
   color: #64748B;
   background: rgba(15, 23, 42, 0.8);
-  padding: 9px 16px;
+  padding: 7px 14px;
   border-radius: 999px;
   border: 1px solid rgba(71, 85, 105, 0.5);
   backdrop-filter: blur(8px);
@@ -237,8 +241,8 @@ const CAROUSEL_STYLES = `
 }
 .pl-btn {
   appearance: none;
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: 1px solid rgba(71, 85, 105, 0.6);
   background: rgba(15, 23, 42, 0.8);
@@ -358,8 +362,22 @@ export const PolaroidLineCarousel: React.FC<PolaroidLineCarouselProps> = ({
 
     const observer = new ResizeObserver(() => {
       const rect = el.getBoundingClientRect();
+      let idealCw = cardWidth;
+      if (rect.width < 450) {
+        idealCw = 220;
+      } else if (rect.width < 768) {
+        idealCw = 245;
+      } else if (rect.width < 1024) {
+        idealCw = 265;
+      } else if (rect.width < 1440) {
+        idealCw = 285;
+      } else {
+        idealCw = 305;
+      }
+
+      // Ensure card height never exceeds 48% of container height to avoid bottom clipping
       const calculatedCw = Math.round(
-        Math.max(160, Math.min(cardWidth, rect.width * 0.38, rect.height * 0.62))
+        Math.max(170, Math.min(idealCw, rect.height * 0.48))
       );
       setViewport({ w: rect.width, h: rect.height, cw: calculatedCw });
     });
@@ -398,7 +416,7 @@ export const PolaroidLineCarousel: React.FC<PolaroidLineCarouselProps> = ({
       lastTime = now;
 
       const { w: width, h: height, cw } = viewport;
-      const topY = Math.max(34, height * 0.15);
+      const topY = Math.max(16, Math.min(32, height * 0.05));
       const drag = dragPointer.current;
 
       let speedForce: number;
@@ -410,7 +428,8 @@ export const PolaroidLineCarousel: React.FC<PolaroidLineCarouselProps> = ({
         speedForce = -(state.off - prevOff) / Math.max(dt, 0.001);
       }
 
-      const { sag: currentSag, swing: currentSwing } = paramsRef.current;
+      const { sag: configuredSag, swing: currentSwing } = paramsRef.current;
+      const currentSag = Math.min(configuredSag, Math.round(height * 0.065));
       const effectiveSwing = prefersReducedMotion ? 0 : currentSwing;
       const closestIdx = getClosestIndex(state.off, stepWidth, totalCount);
 
@@ -641,7 +660,7 @@ export const PolaroidLineCarousel: React.FC<PolaroidLineCarouselProps> = ({
                 />
               )}
             </div>
-            <div className="pl-note">{slide.note || slide.title || ''}</div>
+            <div className="pl-note">{slide.title || slide.note || ''}</div>
           </div>
           {/* Wooden Peg / Clip with realistic wood gradient & metal pin */}
           <div className="pl-peg" />
