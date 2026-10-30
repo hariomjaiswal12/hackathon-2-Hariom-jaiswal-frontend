@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { AuthModal } from '../../components/modals/AuthModal';
 import { PolaroidLineCarousel, type PolaroidSlide } from '../../components/ui/polaroid-line-carousel';
+import { FeatureShowcase } from '../../components/landing/FeatureShowcase';
 import {
   Search,
   Sparkles,
@@ -948,7 +949,10 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-
+      {/* =========================================================================
+          SECTION 4B: INTERACTIVE FEATURE SHOWCASE (Reference Video Recreated)
+      ========================================================================= */}
+      <FeatureShowcase onExploreDemo={handleExploreWithDemo} />
 
       {/* =========================================================================
           SECTION 5: SEARCH → UNDERSTAND → COMPARE (Light Background)

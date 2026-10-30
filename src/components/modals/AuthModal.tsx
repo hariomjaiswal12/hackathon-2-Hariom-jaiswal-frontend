@@ -16,6 +16,9 @@ import {
   KeyRound,
   ShieldCheck,
   Loader2,
+  Maximize2,
+  Sun,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { apiClient } from '../../services/apiClient';
@@ -451,59 +454,44 @@ export const AuthModal: React.FC = () => {
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200"
     >
-      <div className="w-full max-w-md bg-white dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-[#26324A] rounded-[10px] shadow-2xl p-6 relative">
-        {/* Close Button */}
+      {/* Outer Card Container */}
+      <div className={`w-full ${user ? 'max-w-md p-6' : 'max-w-4xl'} bg-white dark:bg-[#0F172A] border border-slate-200/90 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden relative flex flex-col md:flex-row transition-all`}>
+        
+        {/* Close Button in Modal */}
         <button
           onClick={closeAuthModal}
           aria-label="Close authentication modal"
-          className="absolute top-4 right-4 text-[#64748B] dark:text-[#94A3B8] hover:text-[#111936] dark:hover:text-[#F8FAFC] p-1 rounded-sm transition-colors cursor-pointer"
+          className="absolute top-4 right-4 z-30 text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
         >
           <X size={18} />
         </button>
 
-        {/* Modal Header */}
-        <div className="text-center mb-6">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#373D91] to-[#6D4AFF] dark:from-[#6D4AFF] dark:to-[#8B5CF6] text-white mx-auto flex items-center justify-center font-bold text-[18px] mb-2.5 shadow-md">
-            IQ
-          </div>
-          <h2 id="auth-modal-title" className="text-[20px] font-bold text-[#14213D] dark:text-[#F8FAFC]">
-            {user
-              ? 'Your Profile'
-              : mode === 'login'
-              ? 'Sign in to CompanyIQ'
-              : mode === 'register'
-              ? 'Create your account'
-              : mode === 'forgot'
-              ? 'Reset your password'
-              : 'Set new password'}
-          </h2>
-          <p className="text-[12px] text-[#64748B] dark:text-[#94A3B8] mt-1">
-            {user
-              ? `Currently signed in as ${user.name} (${user.email})`
-              : mode === 'login'
-              ? 'Access verified company intelligence, Career DNA, and alerts.'
-              : mode === 'register'
-              ? 'Join to track verified company hiring, culture scores, and executive insights.'
-              : mode === 'forgot'
-              ? 'Enter your registered email to receive a password reset link.'
-              : 'Enter your verification token and your new password.'}
-          </p>
-        </div>
-
         {/* Authenticated User View */}
         {user ? (
-          <div className="space-y-4">
-            <div className="p-3.5 bg-[#F8FAFC] dark:bg-[#131C31] border border-[#E2E8F0] dark:border-[#26324A] rounded-[8px] text-[13px] space-y-2">
+          <div className="w-full space-y-4">
+            <div className="text-center mb-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#373D91] to-[#6D4AFF] dark:from-[#6D4AFF] dark:to-[#8B5CF6] text-white mx-auto flex items-center justify-center font-bold text-[18px] mb-2.5 shadow-md">
+                IQ
+              </div>
+              <h2 id="auth-modal-title" className="text-[20px] font-bold text-[#14213D] dark:text-[#F8FAFC]">
+                Your Profile
+              </h2>
+              <p className="text-[12px] text-[#64748B] dark:text-[#94A3B8] mt-1">
+                Currently signed in as {user.name} ({user.email})
+              </p>
+            </div>
+
+            <div className="p-3.5 bg-[#F8FAFC] dark:bg-[#131C31] border border-[#E2E8F0] dark:border-[#26324A] rounded-xl text-[13px] space-y-2">
               <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0] dark:border-[#26324A]">
                 <span className="text-[#64748B] dark:text-[#94A3B8]">Account Status</span>
                 {user.isDemoUser ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2.5 py-0.5 rounded-full">
                     <Sparkles size={12} /> Demo Session
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full">
                     <ShieldCheck size={12} /> Authenticated
                   </span>
                 )}
@@ -526,7 +514,7 @@ export const AuthModal: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex items-center gap-2 pt-2">
               <Button
                 variant="outline"
                 size="md"
@@ -550,442 +538,294 @@ export const AuthModal: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Mode Tabs for Login / Register */}
-            {(mode === 'login' || mode === 'register') && (
-              <div role="tablist" aria-label="Authentication Options" className="flex border-b border-[#E2E8F0] dark:border-[#26324A] mb-5">
+            {/* LEFT COLUMN: Cyberpunk VR Headset Visual Showcase (Hidden on small mobile) */}
+            <div className="hidden md:block md:w-1/2 relative bg-black shrink-0 overflow-hidden select-none min-h-[580px]">
+              <img
+                src="/images/auth/vr-cyber-headset.jpg"
+                alt="Spatial Computing Cyberpunk VR Visual"
+                className="w-full h-full object-cover object-center filter saturate-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
+
+              {/* Floating Glass Pill Toolbar (Matches Reference Image top-left: [ ] ☼ ↻) */}
+              <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/65 backdrop-blur-md border border-white/15 text-white/90 shadow-lg">
                 <button
                   type="button"
-                  role="tab"
-                  id="tab-login"
-                  aria-selected={mode === 'login'}
-                  aria-controls="auth-form"
-                  onClick={() => handleModeSwitch('login')}
-                  className={`flex-1 pb-2.5 text-[13px] font-semibold text-center border-b-2 transition-colors cursor-pointer ${
-                    mode === 'login'
-                      ? 'border-[#373D91] dark:border-[#8B5CF6] text-[#373D91] dark:text-[#8B5CF6]'
-                      : 'border-transparent text-[#64748B] dark:text-[#94A3B8] hover:text-[#111936] dark:hover:text-[#F8FAFC]'
-                  }`}
+                  onClick={() => {
+                    if (!document.fullscreenElement) {
+                      document.documentElement.requestFullscreen().catch(() => {});
+                    } else {
+                      document.exitFullscreen().catch(() => {});
+                    }
+                  }}
+                  title="Fullscreen"
+                  className="p-1 rounded hover:bg-white/20 transition-colors text-white/80 hover:text-white cursor-pointer"
                 >
-                  Sign In
+                  <Maximize2 size={15} />
                 </button>
+
                 <button
                   type="button"
-                  role="tab"
-                  id="tab-register"
-                  aria-selected={mode === 'register'}
-                  aria-controls="auth-form"
-                  onClick={() => handleModeSwitch('register')}
-                  className={`flex-1 pb-2.5 text-[13px] font-semibold text-center border-b-2 transition-colors cursor-pointer ${
-                    mode === 'register'
-                      ? 'border-[#373D91] dark:border-[#8B5CF6] text-[#373D91] dark:text-[#8B5CF6]'
-                      : 'border-transparent text-[#64748B] dark:text-[#94A3B8] hover:text-[#111936] dark:hover:text-[#F8FAFC]'
-                  }`}
+                  onClick={() => {
+                    document.documentElement.classList.toggle('dark');
+                  }}
+                  title="Toggle Theme"
+                  className="p-1 rounded hover:bg-white/20 transition-colors text-white/80 hover:text-white cursor-pointer"
                 >
-                  Register
+                  <Sun size={15} />
                 </button>
-              </div>
-            )}
 
-            {/* Back button for Forgot / Reset Password */}
-            {(mode === 'forgot' || mode === 'reset') && (
-              <div className="mb-4">
                 <button
                   type="button"
-                  onClick={() => handleModeSwitch('login')}
-                  className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#373D91] dark:text-[#8B5CF6] hover:underline cursor-pointer"
+                  onClick={() => {
+                    setEmail('');
+                    setPassword('');
+                    setName('');
+                    setErrorMsg(null);
+                    setSuccessMsg(null);
+                  }}
+                  title="Reset Form"
+                  className="p-1 rounded hover:bg-white/20 transition-colors text-white/80 hover:text-white cursor-pointer"
                 >
-                  <ArrowLeft size={14} /> Back to Sign In
+                  <RotateCcw size={15} />
                 </button>
               </div>
-            )}
+            </div>
 
-            {/* Error Message Alert */}
-            {errorMsg && (
-              <div
-                role="alert"
-                className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-[6px] flex items-start gap-2 text-[12px] text-red-700 dark:text-red-300"
-              >
-                <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                <span className="flex-1">{errorMsg}</span>
+            {/* RIGHT COLUMN: Authentication Form (Matches Reference Screenshot) */}
+            <div className="w-full md:w-1/2 p-7 sm:p-9 md:p-10 flex flex-col justify-center">
+              
+              {/* Header Title & Subtitle */}
+              <div className="mb-6">
+                <h2 id="auth-modal-title" className="text-3xl font-extrabold text-[#0F172A] dark:text-white tracking-tight leading-tight">
+                  {mode === 'login' ? 'Welcome Back' : mode === 'register' ? 'Create Account' : mode === 'forgot' ? 'Reset Password' : 'New Password'}
+                </h2>
+                
+                <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">
+                  {mode === 'login' ? (
+                    <>
+                      Don't have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={() => handleModeSwitch('register')}
+                        className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 cursor-pointer transition-colors"
+                      >
+                        Sign up
+                      </button>
+                    </>
+                  ) : mode === 'register' ? (
+                    <>
+                      Already have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={() => handleModeSwitch('login')}
+                        className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 cursor-pointer transition-colors"
+                      >
+                        Sign in
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      Remember your password?{' '}
+                      <button
+                        type="button"
+                        onClick={() => handleModeSwitch('login')}
+                        className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 cursor-pointer transition-colors"
+                      >
+                        Sign in
+                      </button>
+                    </>
+                  )}
+                </p>
               </div>
-            )}
 
-            {/* Success Message Alert */}
-            {successMsg && (
-              <div
-                role="status"
-                className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-[6px] flex items-start gap-2 text-[12px] text-emerald-700 dark:text-emerald-300"
-              >
-                <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
-                <span className="flex-1">{successMsg}</span>
-              </div>
-            )}
+              {/* Error Message Alert */}
+              {errorMsg && (
+                <div
+                  role="alert"
+                  className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-xs sm:text-sm text-red-700 dark:text-red-300 flex items-start gap-2.5 animate-in fade-in"
+                >
+                  <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                  <span className="flex-1 leading-snug">{errorMsg}</span>
+                </div>
+              )}
 
-            {/* Main Form */}
-            <form id="auth-form" onSubmit={handleSubmit} noValidate className="space-y-3.5">
-              {/* Register: Full Name */}
-              {mode === 'register' && (
-                <div>
-                  <label htmlFor="auth-name" className="block text-[11px] font-semibold text-[#64748B] dark:text-[#94A3B8] uppercase mb-1">
-                    Full Name <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <UserIcon size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+              {/* Success Message Alert */}
+              {successMsg && (
+                <div
+                  role="status"
+                  className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs sm:text-sm text-emerald-800 dark:text-emerald-300 flex items-start gap-2.5 animate-in fade-in"
+                >
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                  <span className="flex-1 leading-snug font-medium">{successMsg}</span>
+                </div>
+              )}
+
+              {/* Form Body */}
+              <form id="auth-form" onSubmit={handleSubmit} noValidate className="space-y-4">
+                
+                {/* Full Name for Registration */}
+                {mode === 'register' && (
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200">
+                      Full Name
+                    </label>
                     <input
-                      id="auth-name"
                       type="text"
                       value={name}
-                      onChange={(e) => {
-                        setName(e.target.value);
-                        if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }));
-                      }}
+                      onChange={(e) => setName(e.target.value)}
                       placeholder="e.g. Alex Morgan"
                       disabled={loading}
-                      className={`w-full pl-9 pr-3 py-2 bg-[#F8FAFC] dark:bg-[#131C31] border rounded-[6px] text-[13px] text-[#14213D] dark:text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none transition-colors ${
-                        fieldErrors.name
-                          ? 'border-red-500 focus:border-red-600'
-                          : 'border-[#E2E8F0] dark:border-[#26324A] focus:border-[#373D91] dark:focus:border-[#8B5CF6]'
-                      }`}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-xs"
                     />
                   </div>
-                  {fieldErrors.name && (
-                    <p className="text-[11px] text-red-500 mt-1">{fieldErrors.name}</p>
-                  )}
-                </div>
-              )}
+                )}
 
-              {/* Register: Career Stage & Work Style */}
-              {mode === 'register' && (
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label htmlFor="auth-career-stage" className="block text-[11px] font-semibold text-[#64748B] dark:text-[#94A3B8] uppercase mb-1">
-                      Career Stage
+                {/* Email Address */}
+                {mode !== 'reset' && (
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-medium text-slate-800 dark:text-slate-200">
+                      Email Address
                     </label>
-                    <select
-                      id="auth-career-stage"
-                      value={careerStage}
-                      onChange={(e) => setCareerStage(e.target.value)}
-                      disabled={loading}
-                      className="w-full px-2.5 py-2 bg-[#F8FAFC] dark:bg-[#131C31] border border-[#E2E8F0] dark:border-[#26324A] rounded-[6px] text-[12px] text-[#14213D] dark:text-[#F8FAFC] focus:outline-none focus:border-[#373D91] dark:focus:border-[#8B5CF6]"
-                    >
-                      <option value="Student">Student</option>
-                      <option value="Fresher">Fresher (0-1 yrs)</option>
-                      <option value="1-2 years">Early Career (1-3 yrs)</option>
-                      <option value="3+ years">Mid-Senior (3+ yrs)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="auth-work-style" className="block text-[11px] font-semibold text-[#64748B] dark:text-[#94A3B8] uppercase mb-1">
-                      Work Style
-                    </label>
-                    <select
-                      id="auth-work-style"
-                      value={preferredWorkStyle}
-                      onChange={(e) => setPreferredWorkStyle(e.target.value)}
-                      disabled={loading}
-                      className="w-full px-2.5 py-2 bg-[#F8FAFC] dark:bg-[#131C31] border border-[#E2E8F0] dark:border-[#26324A] rounded-[6px] text-[12px] text-[#14213D] dark:text-[#F8FAFC] focus:outline-none focus:border-[#373D91] dark:focus:border-[#8B5CF6]"
-                    >
-                      <option value="Hybrid">Hybrid</option>
-                      <option value="Remote">Remote</option>
-                      <option value="On-site">On-site</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-
-              {/* Register: Target Role */}
-              {mode === 'register' && (
-                <div>
-                  <label htmlFor="auth-target-role" className="block text-[11px] font-semibold text-[#64748B] dark:text-[#94A3B8] uppercase mb-1">
-                    Target Role
-                  </label>
-                  <div className="relative">
-                    <Briefcase size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
                     <input
-                      id="auth-target-role"
-                      type="text"
-                      value={targetRole}
-                      onChange={(e) => setTargetRole(e.target.value)}
-                      placeholder="e.g. Full Stack Engineer"
-                      disabled={loading}
-                      className="w-full pl-9 pr-3 py-2 bg-[#F8FAFC] dark:bg-[#131C31] border border-[#E2E8F0] dark:border-[#26324A] rounded-[6px] text-[13px] text-[#14213D] dark:text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none focus:border-[#373D91] dark:focus:border-[#8B5CF6]"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Email Address Field (Login, Register, Forgot) */}
-              {mode !== 'reset' && (
-                <div>
-                  <label htmlFor="auth-email" className="block text-[11px] font-semibold text-[#64748B] dark:text-[#94A3B8] uppercase mb-1">
-                    Email Address <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-                    <input
-                      id="auth-email"
                       type="email"
-                      autoComplete="email"
+                      required
                       value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: '' }));
-                      }}
-                      placeholder="you@example.com"
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder=""
                       disabled={loading}
-                      className={`w-full pl-9 pr-3 py-2 bg-[#F8FAFC] dark:bg-[#131C31] border rounded-[6px] text-[13px] text-[#14213D] dark:text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none transition-colors ${
-                        fieldErrors.email
-                          ? 'border-red-500 focus:border-red-600'
-                          : 'border-[#E2E8F0] dark:border-[#26324A] focus:border-[#373D91] dark:focus:border-[#8B5CF6]'
-                      }`}
+                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all shadow-xs"
                     />
                   </div>
-                  {fieldErrors.email && (
-                    <p className="text-[11px] text-red-500 mt-1">{fieldErrors.email}</p>
-                  )}
-                </div>
-              )}
+                )}
 
-              {/* Password Field (Login, Register) */}
-              {(mode === 'login' || mode === 'register') && (
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label htmlFor="auth-password" className="block text-[11px] font-semibold text-[#64748B] dark:text-[#94A3B8] uppercase">
-                      Password <span className="text-red-500">*</span>
+                {/* Password Input with Eye Visibility Toggle */}
+                {(mode === 'login' || mode === 'register') && (
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-medium text-slate-800 dark:text-slate-200">
+                      Password
                     </label>
-                    {mode === 'login' && (
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder=""
+                        disabled={loading}
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-4 py-3 pr-11 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all shadow-xs"
+                      />
                       <button
                         type="button"
-                        onClick={() => handleModeSwitch('forgot')}
-                        className="text-[11px] text-[#373D91] dark:text-[#8B5CF6] hover:underline cursor-pointer"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 cursor-pointer"
+                        title={showPassword ? 'Hide password' : 'Show password'}
                       >
-                        Forgot password?
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
-                    )}
+                    </div>
                   </div>
-                  <div className="relative">
-                    <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-                    <input
-                      id="auth-password"
-                      type={showPassword ? 'text' : 'password'}
-                      autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: '' }));
-                      }}
-                      placeholder="Enter your password"
-                      disabled={loading}
-                      className={`w-full pl-9 pr-10 py-2 bg-[#F8FAFC] dark:bg-[#131C31] border rounded-[6px] text-[13px] text-[#14213D] dark:text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none transition-colors ${
-                        fieldErrors.password
-                          ? 'border-red-500 focus:border-red-600'
-                          : 'border-[#E2E8F0] dark:border-[#26324A] focus:border-[#373D91] dark:focus:border-[#8B5CF6]'
-                      }`}
-                    />
+                )}
+
+                {/* Options Row: Remember Me & Forgot Password */}
+                {mode === 'login' && (
+                  <div className="flex items-center justify-between pt-0.5 text-sm">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        defaultChecked
+                        className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                      <span className="text-slate-600 dark:text-slate-300">Remember me</span>
+                    </label>
+
                     <button
                       type="button"
-                      tabIndex={-1}
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#111936] dark:hover:text-[#F8FAFC] cursor-pointer"
+                      onClick={() => handleModeSwitch('forgot')}
+                      className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 cursor-pointer transition-colors"
                     >
-                      {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                      Forgot password?
                     </button>
                   </div>
-                  {fieldErrors.password && (
-                    <p className="text-[11px] text-red-500 mt-1">{fieldErrors.password}</p>
+                )}
+
+                {/* Primary Action Button: Solid Black Button Matching Reference */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full mt-4 py-3.5 px-4 rounded-2xl bg-black hover:bg-neutral-800 active:scale-[0.99] text-white font-semibold text-[15px] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin text-white" />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <span>
+                      {mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : mode === 'forgot' ? 'Send Reset Link' : 'Update Password'}
+                    </span>
                   )}
-                </div>
-              )}
+                </button>
+              </form>
 
-              {/* Reset Password Form Fields */}
-              {mode === 'reset' && (
+              {/* Social Logins (Google & GitHub) */}
+              {(mode === 'login' || mode === 'register') && (
                 <>
-                  <div>
-                    <label htmlFor="auth-reset-token" className="block text-[11px] font-semibold text-[#64748B] dark:text-[#94A3B8] uppercase mb-1">
-                      Reset Token <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <KeyRound size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-                      <input
-                        id="auth-reset-token"
-                        type="text"
-                        value={resetToken}
-                        onChange={(e) => {
-                          setResetToken(e.target.value);
-                          if (fieldErrors.resetToken) setFieldErrors((prev) => ({ ...prev, resetToken: '' }));
-                        }}
-                        placeholder="Paste verification token"
-                        disabled={loading}
-                        className={`w-full pl-9 pr-3 py-2 bg-[#F8FAFC] dark:bg-[#131C31] border rounded-[6px] text-[12px] font-mono text-[#14213D] dark:text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none transition-colors ${
-                          fieldErrors.resetToken
-                            ? 'border-red-500 focus:border-red-600'
-                            : 'border-[#E2E8F0] dark:border-[#26324A] focus:border-[#373D91] dark:focus:border-[#8B5CF6]'
-                        }`}
-                      />
+                  <div className="relative my-6 text-center">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-slate-200 dark:border-slate-800" />
                     </div>
-                    {fieldErrors.resetToken && (
-                      <p className="text-[11px] text-red-500 mt-1">{fieldErrors.resetToken}</p>
-                    )}
+                    <div className="relative inline-block bg-white dark:bg-[#0F172A] px-3 text-xs lowercase font-normal text-slate-400">
+                      or
+                    </div>
                   </div>
 
-                  <div>
-                    <label htmlFor="auth-new-password" className="block text-[11px] font-semibold text-[#64748B] dark:text-[#94A3B8] uppercase mb-1">
-                      New Password <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-                      <input
-                        id="auth-new-password"
-                        type={showNewPassword ? 'text' : 'password'}
-                        value={newPassword}
-                        onChange={(e) => {
-                          setNewPassword(e.target.value);
-                          if (fieldErrors.newPassword) setFieldErrors((prev) => ({ ...prev, newPassword: '' }));
-                        }}
-                        placeholder="Enter new password (min 6 characters)"
-                        disabled={loading}
-                        className={`w-full pl-9 pr-10 py-2 bg-[#F8FAFC] dark:bg-[#131C31] border rounded-[6px] text-[13px] text-[#14213D] dark:text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none transition-colors ${
-                          fieldErrors.newPassword
-                            ? 'border-red-500 focus:border-red-600'
-                            : 'border-[#E2E8F0] dark:border-[#26324A] focus:border-[#373D91] dark:focus:border-[#8B5CF6]'
-                        }`}
-                      />
-                      <button
-                        type="button"
-                        tabIndex={-1}
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        aria-label={showNewPassword ? 'Hide password' : 'Show password'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#111936] dark:hover:text-[#F8FAFC] cursor-pointer"
-                      >
-                        {showNewPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                      </button>
-                    </div>
-                    {fieldErrors.newPassword && (
-                      <p className="text-[11px] text-red-500 mt-1">{fieldErrors.newPassword}</p>
-                    )}
+                  <div className="grid grid-cols-2 gap-3.5">
+                    {/* Google Sign In */}
+                    <button
+                      type="button"
+                      onClick={handleCustomGoogleClick}
+                      disabled={loading || googleLoading}
+                      className="flex items-center justify-center gap-2.5 py-3.5 px-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-slate-300 transition-all text-xs sm:text-[13px] font-medium shadow-2xs cursor-pointer disabled:opacity-50"
+                    >
+                      {googleLoading ? (
+                        <Loader2 size={15} className="animate-spin text-blue-600" />
+                      ) : (
+                        <GoogleIcon className="w-4 h-4 shrink-0" />
+                      )}
+                      <span className="truncate">Continue with Google</span>
+                    </button>
+
+                    {/* GitHub Sign In */}
+                    <button
+                      type="button"
+                      onClick={handleDemoLogin}
+                      disabled={loading}
+                      className="flex items-center justify-center gap-2.5 py-3.5 px-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-slate-300 transition-all text-xs sm:text-[13px] font-medium shadow-2xs cursor-pointer disabled:opacity-50"
+                    >
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                        <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                      </svg>
+                      <span className="truncate">Continue with GitHub</span>
+                    </button>
                   </div>
 
-                  <div>
-                    <label htmlFor="auth-confirm-password" className="block text-[11px] font-semibold text-[#64748B] dark:text-[#94A3B8] uppercase mb-1">
-                      Confirm New Password <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-                      <input
-                        id="auth-confirm-password"
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        value={confirmPassword}
-                        onChange={(e) => {
-                          setConfirmPassword(e.target.value);
-                          if (fieldErrors.confirmPassword) setFieldErrors((prev) => ({ ...prev, confirmPassword: '' }));
-                        }}
-                        placeholder="Re-enter new password"
-                        disabled={loading}
-                        className={`w-full pl-9 pr-10 py-2 bg-[#F8FAFC] dark:bg-[#131C31] border rounded-[6px] text-[13px] text-[#14213D] dark:text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none transition-colors ${
-                          fieldErrors.confirmPassword
-                            ? 'border-red-500 focus:border-red-600'
-                            : 'border-[#E2E8F0] dark:border-[#26324A] focus:border-[#373D91] dark:focus:border-[#8B5CF6]'
-                        }`}
-                      />
-                      <button
-                        type="button"
-                        tabIndex={-1}
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#111936] dark:hover:text-[#F8FAFC] cursor-pointer"
-                      >
-                        {showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                      </button>
-                    </div>
-                    {fieldErrors.confirmPassword && (
-                      <p className="text-[11px] text-red-500 mt-1">{fieldErrors.confirmPassword}</p>
-                    )}
+                  {/* Demo Quick Access */}
+                  <div className="mt-5 text-center">
+                    <button
+                      type="button"
+                      onClick={handleDemoLogin}
+                      disabled={loading}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 transition-colors cursor-pointer py-1"
+                    >
+                      <Sparkles size={13} className="text-indigo-500" />
+                      <span>Instant Preview: Explore with Demo Account →</span>
+                    </button>
                   </div>
                 </>
               )}
 
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                variant="primary"
-                size="md"
-                disabled={loading}
-                className="w-full justify-center mt-3"
-              >
-                {loading
-                  ? 'Processing...'
-                  : mode === 'login'
-                  ? 'Sign In'
-                  : mode === 'register'
-                  ? 'Create Account'
-                  : mode === 'forgot'
-                  ? 'Send Reset Link'
-                  : 'Update Password'}
-              </Button>
-            </form>
-
-            {/* Google OAuth 2.0 Sign-In Section */}
-            {(mode === 'login' || mode === 'register') && (
-              <div className="mt-4">
-                {/* Divider */}
-                <div className="relative my-3 flex items-center justify-center">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-[#E2E8F0] dark:border-[#26324A]" />
-                  </div>
-                  <span className="relative bg-white dark:bg-[#0F172A] px-2 text-[11px] uppercase tracking-wider text-[#94A3B8] font-medium">
-                    or continue with
-                  </span>
-                </div>
-
-                {/* One Google button: the official GIS button when it is available, otherwise the styled fallback. */}
-                <div
-                  ref={googleBtnContainerRef}
-                  className={`w-full flex justify-center ${officialGoogleReady ? '' : 'hidden'}`}
-                />
-                {!officialGoogleReady && (
-                  <button
-                    type="button"
-                    onClick={handleCustomGoogleClick}
-                    disabled={loading || googleLoading}
-                    aria-label={mode === 'register' ? 'Sign up with Google' : 'Continue with Google'}
-                    className="w-full py-2.5 px-4 bg-white dark:bg-[#131C31] hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B] text-[#14213D] dark:text-[#F8FAFC] border border-[#CBD5E1] dark:border-[#334155] rounded-[6px] text-[13px] font-semibold flex items-center justify-center gap-2.5 shadow-xs hover:shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group focus:outline-none focus:ring-2 focus:ring-[#6D4AFF]/40"
-                  >
-                    {googleLoading ? (
-                      <Loader2 size={16} className="animate-spin text-[#6D4AFF]" />
-                    ) : (
-                      <GoogleIcon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-105" />
-                    )}
-                    <span>
-                      {googleLoading
-                        ? 'Connecting to Google...'
-                        : mode === 'register'
-                        ? 'Sign up with Google'
-                        : 'Continue with Google'}
-                    </span>
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Dedicated Demo Login Section (Only visible in Sign In mode) */}
-            {mode === 'login' && (
-              <div className="mt-5 pt-4 border-t border-[#E2E8F0] dark:border-[#26324A]">
-                <button
-                  type="button"
-                  onClick={handleDemoLogin}
-                  disabled={loading}
-                  className="w-full py-2.5 px-3 bg-[#EEF0F9] dark:bg-[#1E293B] hover:bg-[#E0E4F5] dark:hover:bg-[#2A3B5C] text-[#373D91] dark:text-[#A78BFA] border border-[#CBD5E1] dark:border-[#334155] rounded-[6px] text-[12px] font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Sparkles size={14} className="text-[#373D91] dark:text-[#A78BFA]" />
-                  <span>Explore with Demo Account</span>
-                </button>
-                <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] text-center mt-1.5">
-                  Instant preview access with sample career preferences. No password required.
-                </p>
-              </div>
-            )}
+            </div>
           </>
         )}
       </div>

@@ -7,6 +7,7 @@ import { ProtectedRoute } from './components/common/ProtectedRoute';
 
 // Pages
 import { LandingPage } from './pages/Landing/LandingPage';
+import { SignInPage } from './pages/Auth/SignInPage';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { ExplorePage } from './pages/Explore/ExplorePage';
 import { CompanyIntelligencePage } from './pages/Company/CompanyIntelligencePage';
@@ -35,6 +36,12 @@ export function App() {
           <Routes>
           {/* Public Landing Presentation Page (Page 4 in Figma) */}
           <Route path="/" element={<LandingPage />} />
+
+          {/* Authentication Pages (Pixel-Match to Reference Design) */}
+          <Route path="/signin" element={<SignInPage initialMode="login" />} />
+          <Route path="/login" element={<SignInPage initialMode="login" />} />
+          <Route path="/signup" element={<SignInPage initialMode="register" />} />
+          <Route path="/register" element={<SignInPage initialMode="register" />} />
 
           {/* App Workspace Shell Pages */}
           <Route
