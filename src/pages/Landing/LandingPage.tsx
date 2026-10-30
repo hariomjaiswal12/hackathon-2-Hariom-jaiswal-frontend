@@ -40,63 +40,63 @@ const POLAROID_SLIDES: PolaroidSlide[] = [
     image: '/images/companyiq/linkedin-research.webp',
     title: 'LinkedIn — Professional Signals',
     caption: 'Company overview, headcount velocity, leadership signals & alumni networks.',
-    note: 'LinkedIn — Professional Signals',
+    note: 'LinkedIn Signals',
     alt: 'LinkedIn Company Research and Professional Signals',
   },
   {
     image: '/images/companyiq/ambitionbox-reviews.webp',
     title: 'AmbitionBox — Employee Reviews',
     caption: 'Verified employee reviews, workplace culture ratings, and salary satisfaction.',
-    note: 'AmbitionBox — Employee Reviews',
+    note: 'AmbitionBox Reviews',
     alt: 'AmbitionBox Verified Employee Reviews and Workplace Ratings',
   },
   {
     image: '/images/companyiq/glassdoor-insights.webp',
     title: 'Glassdoor — Ratings & Reviews',
     caption: '4.4★ overall ratings, 94% CEO approval, and verified pros & cons breakdown.',
-    note: 'Glassdoor — Ratings & Reviews',
+    note: 'Glassdoor Ratings',
     alt: 'Glassdoor Company Ratings, CEO Approval, and Pros/Cons',
   },
   {
     image: '/images/companyiq/indeed-careers.webp',
     title: 'Indeed — Career Opportunities',
     caption: 'Active hiring requisitions, compensation ranges, and recruitment demand trends.',
-    note: 'Indeed — Career Opportunities',
+    note: 'Indeed Requisitions',
     alt: 'Indeed Active Requisitions, Salary Data, and Hiring Demand',
   },
   {
     image: '/images/companyiq/levelsfyi-salaries.webp',
     title: 'Levels.fyi — Salary Intelligence',
     caption: 'Base, RSU stock, bonus breakdowns, and verified level-by-level compensation.',
-    note: 'Levels.fyi — Salary Intelligence',
+    note: 'Levels.fyi Salaries',
     alt: 'Levels.fyi Verified Compensation Bands and Leveling Matrix',
   },
   {
     image: '/images/companyiq/teamblind-discussions.webp',
     title: 'TeamBlind — Anonymous Insights',
     caption: 'Anonymous verified tech employee discussions, workplace culture, and sentiment.',
-    note: 'TeamBlind — Anonymous Insights',
+    note: 'TeamBlind Insights',
     alt: 'TeamBlind Anonymous Employee Discussions and Workplace Culture',
   },
   {
     image: '/images/companyiq/reddit-community.webp',
     title: 'Reddit — Community Discussions',
     caption: 'r/cscareerquestions and tech community unfiltered career advice & consensus.',
-    note: 'Reddit — Community Discussions',
+    note: 'Reddit Discussions',
     alt: 'Reddit r/cscareerquestions Tech Career Community Consensus',
   },
   {
     image: '/images/companyiq/comparably-culture.webp',
     title: 'Comparably — Culture Insights',
     caption: 'Workplace culture scores, executive team approval, and diversity benchmarks.',
-    note: 'Comparably — Culture Insights',
+    note: 'Comparably Culture',
     alt: 'Comparably Culture Score, Leadership Ratings, and Diversity',
   },
   {
     image: '/images/companyiq/themuse-advice.webp',
     title: 'The Muse — Career Guidance',
     caption: 'Company culture deep dives, employee stories, and real-world interview coaching.',
-    note: 'The Muse — Career Guidance',
+    note: 'The Muse Careers',
     alt: 'The Muse Company Culture Deep Dives and Interview Coaching',
   },
 ];
@@ -454,7 +454,7 @@ export const LandingPage: React.FC = () => {
       {/* =========================================================================
           SECTION 2: FULL-SCREEN IMMERSIVE POLAROID LINE CAROUSEL GALLERY
       ========================================================================= */}
-      <section className="relative w-full min-h-[720px] lg:min-h-[780px] xl:min-h-[820px] h-auto lg:h-[100svh] flex flex-col justify-between pt-[74px] pb-3 overflow-hidden bg-[#070B14]">
+      <section className="relative w-full h-[100svh] min-h-[680px] max-h-[1020px] flex flex-col justify-between pt-[68px] pb-1 overflow-hidden bg-[#070B14]">
         {/* Cinematic Ambient Glows in Deep Black Canvas */}
         <div
           className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[1100px] h-[650px] rounded-full pointer-events-none -z-10 opacity-40 blur-3xl"
@@ -465,32 +465,32 @@ export const LandingPage: React.FC = () => {
         />
 
         {/* TOP: Section Header with Problem Statement */}
-        <div className="w-full max-w-4xl mx-auto px-6 text-center space-y-2 z-10 pt-1 shrink-0">
-          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-400 text-[10.5px] sm:text-[11px] font-semibold tracking-widest uppercase shadow-xs">
+        <div className="w-full max-w-4xl mx-auto px-6 text-center space-y-1.5 z-10 pt-1 shrink-0">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-400 text-[10.5px] sm:text-[11px] font-semibold tracking-widest uppercase shadow-xs">
             <Sparkles size={12} className="text-blue-400" />
             <span>THE PROBLEM WITH COMPANY RESEARCH</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-[38px] font-extrabold text-white tracking-tight leading-[1.14]">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-extrabold text-white tracking-tight leading-[1.12]">
             Company Research Is{' '}
             <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
               Scattered Everywhere.
             </span>
           </h1>
 
-          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xl mx-auto font-normal">
+          <p className="text-slate-300 text-xs sm:text-sm md:text-[15px] leading-relaxed max-w-xl mx-auto font-normal">
             From professional networks to salary insights and employee reviews, job seekers visit
             multiple platforms to understand a single company.
           </p>
         </div>
 
         {/* CENTER & BOTTOM: Full-Screen Hanging Polaroid Gallery spanning full viewport width */}
-        <div className="relative w-full flex-1 min-h-[480px] sm:min-h-[520px] lg:min-h-[560px] my-auto">
+        <div className="relative w-full flex-1 min-h-0 my-1">
           <PolaroidLineCarousel
             slides={POLAROID_SLIDES}
             height="100%"
-            cardWidth={290}
-            sag={38}
+            cardWidth={380}
+            sag={46}
             swing={1}
             autoplay={4500}
             string="#94A3B8"
@@ -1267,7 +1267,7 @@ export const LandingPage: React.FC = () => {
                     ? 'bg-blue-50/80 shadow-xs border border-blue-200'
                     : 'hover:bg-slate-50'
                 }`}
-              >
+                >
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-md bg-white p-1 shadow-xs flex items-center justify-center">
                     <span className="font-bold text-xs text-red-600">A</span>
