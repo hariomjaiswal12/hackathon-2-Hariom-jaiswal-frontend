@@ -1267,7 +1267,7 @@ export const LandingPage: React.FC = () => {
                     ? 'bg-blue-50/80 shadow-xs border border-blue-200'
                     : 'hover:bg-slate-50'
                 }`}
-                >
+              >
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-md bg-white p-1 shadow-xs flex items-center justify-center">
                     <span className="font-bold text-xs text-red-600">A</span>

@@ -125,7 +125,7 @@ const CAROUSEL_STYLES = `
 }
 .pl-card[data-on="1"] .pl-print {
   transform: scale(1.15);
-  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.7), 0 35px 85px -12px rgba(37, 99, 235, 0.48), 0 0 0 2px rgba(147, 197, 253, 0.65);
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.7), 0 35px 85px -12px rgba(37, 99, 235, 0.48), 0 0 0 2.5px rgba(96, 165, 250, 0.75);
   filter: saturate(1.05) brightness(1.02);
   opacity: 1;
 }
@@ -341,8 +341,8 @@ export const PolaroidLineCarousel: React.FC<PolaroidLineCarouselProps> = ({
   const paramsRef = useRef({ sag, swing });
   paramsRef.current = { sag, swing };
 
-  // Spacing between cards along the hanging line (5 cards visible on desktop)
-  const stepWidth = viewport.cw * 1.15;
+  // Spacing between cards along the hanging line (balanced 5-card layout on desktop)
+  const stepWidth = viewport.cw * 1.12;
 
   // Jump to specific slide index
   const goToIndex = useCallback(
@@ -361,7 +361,7 @@ export const PolaroidLineCarousel: React.FC<PolaroidLineCarouselProps> = ({
       const rect = el.getBoundingClientRect();
       // Calculate vertical headroom to prevent any card clipping into bottom bar
       const verticalBudget = Math.max(200, rect.height - 180);
-      const maxCwFromHeight = Math.round((verticalBudget / 1.15 - 71) / 0.84);
+      const maxCwFromHeight = Math.round((verticalBudget / 1.15 - 74) / 0.84);
       const calculatedCw = Math.round(
         Math.max(170, Math.min(cardWidth, rect.width * 0.35, maxCwFromHeight))
       );
