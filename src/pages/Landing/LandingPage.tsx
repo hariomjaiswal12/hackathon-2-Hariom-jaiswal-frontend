@@ -489,8 +489,8 @@ export const LandingPage: React.FC = () => {
           <PolaroidLineCarousel
             slides={POLAROID_SLIDES}
             height="100%"
-            cardWidth={380}
-            sag={46}
+            cardWidth={350}
+            sag={44}
             swing={1}
             autoplay={4500}
             string="#94A3B8"

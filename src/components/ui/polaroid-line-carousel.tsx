@@ -105,37 +105,38 @@ const CAROUSEL_STYLES = `
   position: absolute;
   left: 0;
   top: 0;
-  width: var(--pl-cw, 380px);
+  width: var(--pl-cw, 350px);
   transform-origin: 50% 0;
   will-change: transform;
   cursor: inherit;
 }
 .pl-print {
-  margin-top: 14px;
+  margin-top: 8px;
   background: #FFFFFF;
-  padding: 16px 14px 10px;
+  padding: 9px 9px 6px;
   border-radius: 6px;
-  box-shadow: 0 8px 18px -3px rgba(0, 0, 0, 0.5), 0 24px 48px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.16);
+  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.55), 0 20px 45px -10px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(255, 255, 255, 0.18);
   transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.5s ease, box-shadow 0.5s ease, opacity 0.5s ease;
 }
 .pl-card[data-on="0"] .pl-print {
   transform: scale(0.92);
-  filter: saturate(0.85) brightness(0.90);
+  filter: saturate(0.88) brightness(0.90);
   opacity: 0.88;
 }
 .pl-card[data-on="1"] .pl-print {
   transform: scale(1.15);
-  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.7), 0 35px 85px -12px rgba(37, 99, 235, 0.48), 0 0 0 2.5px rgba(96, 165, 250, 0.75);
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.7), 0 35px 85px -12px rgba(37, 99, 235, 0.5), 0 0 0 2.5px rgba(96, 165, 250, 0.85);
   filter: saturate(1.05) brightness(1.02);
   opacity: 1;
 }
 .pl-shot {
   position: relative;
+  width: 100%;
   aspect-ratio: 1000 / 840;
   overflow: hidden;
   border-radius: 4px;
   background: #0B1120;
-  border: 1px solid rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(0, 0, 0, 0.25);
 }
 .pl-shot img {
   position: absolute;
@@ -143,18 +144,19 @@ const CAROUSEL_STYLES = `
   width: 100%;
   height: 100%;
   max-width: none;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   image-rendering: -webkit-optimize-contrast;
   display: block;
   pointer-events: none;
 }
 .pl-note {
-  height: 48px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 8px;
-  font: italic 600 clamp(14px, 1.15vw, 17px)/1.2 ui-serif, Georgia, Cambria, 'Times New Roman', serif;
+  padding: 0 6px;
+  font: italic 600 clamp(13px, 1.05vw, 15px)/1.1 ui-serif, Georgia, Cambria, 'Times New Roman', serif;
   color: #0F172A;
   white-space: nowrap;
   overflow: hidden;
@@ -164,22 +166,22 @@ const CAROUSEL_STYLES = `
 .pl-peg {
   position: absolute;
   left: 50%;
-  top: 0;
-  width: 14px;
-  height: 28px;
-  margin-left: -7px;
-  border-radius: 3px;
+  top: -4px;
+  width: 13px;
+  height: 20px;
+  margin-left: -6.5px;
+  border-radius: 2px;
   background: linear-gradient(90deg, #9C7142 0%, #D4AF7A 35%, #F0D5AA 50%, #C49A62 70%, #8A5D32 100%);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.4);
   z-index: 20;
 }
 .pl-peg::after {
   content: '';
   position: absolute;
-  left: 5.5px;
-  top: 9px;
-  width: 3px;
-  height: 9px;
+  left: 5px;
+  top: 7px;
+  width: 2.5px;
+  height: 6px;
   background: rgba(45, 30, 15, 0.75);
   border-radius: 1px;
 }
@@ -296,8 +298,8 @@ const CAROUSEL_STYLES = `
 export const PolaroidLineCarousel: React.FC<PolaroidLineCarouselProps> = ({
   slides,
   height = '100%',
-  cardWidth = 380,
-  sag = 52,
+  cardWidth = 350,
+  sag = 48,
   swing = 1,
   autoplay = 4500,
   string = '#94A3B8',
@@ -341,8 +343,8 @@ export const PolaroidLineCarousel: React.FC<PolaroidLineCarouselProps> = ({
   const paramsRef = useRef({ sag, swing });
   paramsRef.current = { sag, swing };
 
-  // Spacing between cards along the hanging line (balanced 5-card layout on desktop)
-  const stepWidth = viewport.cw * 1.12;
+  // Spacing between cards along the hanging line (5-card balanced arrangement)
+  const stepWidth = viewport.cw * 1.08;
 
   // Jump to specific slide index
   const goToIndex = useCallback(
@@ -352,18 +354,18 @@ export const PolaroidLineCarousel: React.FC<PolaroidLineCarouselProps> = ({
     [totalCount, stepWidth]
   );
 
-  // ResizeObserver for responsive width & height
+  // ResizeObserver for responsive width & height with 85% image height ratio
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
 
     const observer = new ResizeObserver(() => {
       const rect = el.getBoundingClientRect();
-      // Calculate vertical headroom to prevent any card clipping into bottom bar
-      const verticalBudget = Math.max(200, rect.height - 180);
-      const maxCwFromHeight = Math.round((verticalBudget / 1.15 - 74) / 0.84);
+      // Headroom calculation: card height is ~cw * 0.84 + 49px; active scale 1.15
+      const verticalBudget = Math.max(200, rect.height - 150);
+      const maxCwFromHeight = Math.round((verticalBudget / 1.15 - 49) / 0.84);
       const calculatedCw = Math.round(
-        Math.max(170, Math.min(cardWidth, rect.width * 0.35, maxCwFromHeight))
+        Math.max(180, Math.min(cardWidth, rect.width * 0.35, maxCwFromHeight))
       );
       setViewport({ w: rect.width, h: rect.height, cw: calculatedCw });
     });
@@ -402,7 +404,7 @@ export const PolaroidLineCarousel: React.FC<PolaroidLineCarouselProps> = ({
       lastTime = now;
 
       const { w: width, h: height, cw } = viewport;
-      const topY = Math.max(16, Math.min(32, height * 0.06));
+      const topY = Math.max(16, Math.min(28, height * 0.055));
       const drag = dragPointer.current;
 
       let speedForce: number;
