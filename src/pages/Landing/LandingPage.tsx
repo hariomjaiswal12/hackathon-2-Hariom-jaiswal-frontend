@@ -3,7 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { AuthModal } from '../../components/modals/AuthModal';
 import { PolaroidLineCarousel, type PolaroidSlide } from '../../components/ui/polaroid-line-carousel';
+import { HalftoneWordmarkFooter } from '../../components/ui/halftone-wordmark-footer';
 import { FeatureShowcase } from '../../components/landing/FeatureShowcase';
+import { CompanyMarquee } from '../../components/landing/CompanyMarquee';
 import { CareerDNASection } from '../../components/landing/CareerDNASection';
 import { CompareSection } from '../../components/landing/CompareSection';
 import {
@@ -952,6 +954,11 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* =========================================================================
+          SECTION 4A: CONTINUOUS COMPANY LOGO MARQUEE (Left-to-Right Animated Ticker)
+      ========================================================================= */}
+      <CompanyMarquee />
+
+      {/* =========================================================================
           SECTION 4B: INTERACTIVE FEATURE SHOWCASE (Reference Video Recreated)
       ========================================================================= */}
       <FeatureShowcase onExploreDemo={handleExploreWithDemo} />
@@ -1312,62 +1319,20 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          SECTION 11: FOOTER (Dark Navy Background)
+          SECTION 11: ANIMATED HALFTONE WORDMARK FOOTER
       ========================================================================= */}
-      <footer className="bg-[#070B14] border-t border-white/10 text-slate-400 py-14 px-6 text-sm">
-        <div className="max-w-6xl mx-auto space-y-10">
-          <div className="grid grid-cols-2 md:grid-cols-12 gap-8">
-            <div className="col-span-2 md:col-span-4 space-y-3">
-              <Link to="/" className="flex items-center gap-2.5 no-underline">
-                <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center text-white">
-                  <Layers size={15} />
-                </div>
-                <span className="font-bold text-base text-white">CompanyIQ</span>
-              </Link>
-              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[13px]">
-                Company research, grounded in evidence.
-              </p>
-            </div>
-            <div className="md:col-span-2 space-y-3">
-              <span className="font-semibold text-white block text-[13px]">Product</span>
-              <ul className="space-y-2 text-[13px]">
-                <li><Link to="/explore" className="hover:text-white">Explore</Link></li>
-                <li><Link to="/compare" className="hover:text-white">Compare</Link></li>
-                <li><Link to="/ask" className="hover:text-white">AI Insights</Link></li>
-                <li><Link to="/career-dna" className="hover:text-white">Career DNA</Link></li>
-              </ul>
-            </div>
-            <div className="md:col-span-3 space-y-3">
-              <span className="font-semibold text-white block text-[13px]">Company</span>
-              <ul className="space-y-2 text-[13px]">
-                <li><a href="#transparency" className="hover:text-white">About</a></li>
-                <li><a href="#how-it-works" className="hover:text-white">How it works</a></li>
-                <li><Link to="/sources" className="hover:text-white">Methodology</Link></li>
-                <li><a href="#search" className="hover:text-white">Blog</a></li>
-              </ul>
-            </div>
-            <div className="md:col-span-3 space-y-3">
-              <span className="font-semibold text-white block text-[13px]">Legal</span>
-              <ul className="space-y-2 text-[13px]">
-                <li><Link to="/settings" className="hover:text-white">Privacy</Link></li>
-                <li><Link to="/settings" className="hover:text-white">Terms</Link></li>
-                <li><Link to="/settings" className="hover:text-white">AI limitations</Link></li>
-                <li><Link to="/settings" className="hover:text-white">Contact</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[12px] text-slate-500">
-            <div>© 2026 CompanyIQ. All rights reserved.</div>
-            <div className="flex items-center gap-3">
-              <Link to="/settings" className="hover:text-slate-300">Privacy</Link>
-              <span>·</span>
-              <Link to="/settings" className="hover:text-slate-300">Terms</Link>
-              <span>·</span>
-              <Link to="/settings" className="hover:text-slate-300">Contact</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <HalftoneWordmarkFooter
+        wordmark="companyiq"
+        label="CompanyIQ"
+        meta="AI-powered company intelligence | Research smarter. Decide better."
+        preset="night"
+        interactive={true}
+        backToTop={true}
+        dotGap={5}
+        radius={95}
+        grain={0.25}
+        fontWeight={800}
+      />
 
       {/* Auth Modal Integration for Sign In */}
       <AuthModal />
