@@ -666,12 +666,12 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
                       <img
                         src={slide.image}
                         alt={slide.title}
-                        className="absolute inset-0 w-full h-full object-cover object-top opacity-85 group-hover:opacity-100 transition-opacity duration-300"
+                        className="absolute inset-0 w-full h-full object-cover object-center opacity-95 group-hover:opacity-100 transition-all duration-300"
                         loading="lazy"
                       />
 
                       {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#070B14]/90 via-[#070B14]/30 to-transparent group-hover:from-[#070B14]/75 transition-colors duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#070B14]/80 via-transparent to-transparent group-hover:from-[#070B14]/60 transition-colors duration-300" />
 
                       {/* Highlight outline */}
                       <div className="absolute inset-0 rounded-2xl border border-white/5 group-hover:border-blue-400/40 transition-colors pointer-events-none" />
