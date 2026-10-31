@@ -58,6 +58,7 @@ export const AuthModal: React.FC = () => {
     loginGoogle,
     register,
     user,
+    reloadUserData,
     logout,
   } = useApp();
 
@@ -209,26 +210,73 @@ export const AuthModal: React.FC = () => {
     };
   }, [isAuthModalOpen]);
 
-  const handleCustomGoogleClick = () => {
+  const handleCustomGoogleClick = async () => {
     if (!isGoogleConfigured) {
       setErrorMsg(
-        'Google Sign-In requires an active Google OAuth Client ID. Please configure VITE_GOOGLE_CLIENT_ID in h2frontend/.env (refer to docs/google-oauth-setup.md).'
+        'Google Sign-In requires an active Google OAuth Client ID. Please configure VITE_GOOGLE_CLIENT_ID.'
       );
       return;
     }
 
-    if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
-      setGoogleLoading(true);
-      (window as any).google.accounts.id.prompt((notification: any) => {
-        setGoogleLoading(false);
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          const reason = notification.getNotDisplayedReason?.() || notification.getSkippedReason?.() || 'Prompt closed';
-          console.log('[Google GIS] Prompt status:', reason);
-        }
-      });
-    } else {
-      setErrorMsg('Google Identity Services is initializing. Please try again in a moment.');
+    setGoogleLoading(true);
+    setErrorMsg(null);
+
+    // Attempt GIS popup client first
+    const gis = (window as any).google?.accounts?.oauth2;
+    if (gis && typeof gis.initCodeClient === 'function') {
+      try {
+        const client = gis.initCodeClient({
+          client_id: googleClientId,
+          scope: 'openid email profile',
+          ux_mode: 'popup',
+          callback: async (response: { code?: string; error?: string }) => {
+            if (response.error) {
+              setGoogleLoading(false);
+              setErrorMsg(`Google sign-in was cancelled (${response.error}).`);
+              return;
+            }
+            if (!response.code) {
+              setGoogleLoading(false);
+              setErrorMsg('No authorization code returned from Google.');
+              return;
+            }
+
+            try {
+              const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/$/, '');
+              const res = await fetch(`${apiUrl}/auth/google/callback?code=${encodeURIComponent(response.code)}&json=true`, {
+                headers: { Accept: 'application/json' },
+              });
+              const data = await res.json();
+              if (data.success && data.data?.tokens?.accessToken) {
+                apiClient.setToken(data.data.tokens.accessToken, data.data.tokens.refreshToken);
+                await reloadUserData();
+                setSuccessMsg('Signed in with Google successfully! Opening dashboard...');
+                setTimeout(() => {
+                  closeAuthModal();
+                  navigate('/dashboard');
+                }, 600);
+              } else {
+                setErrorMsg(data.error?.message || 'Google authentication failed on server.');
+              }
+            } catch (err: any) {
+              setErrorMsg(err.message || 'Unable to connect to CompanyIQ server.');
+            } finally {
+              setGoogleLoading(false);
+            }
+          },
+        });
+        client.requestCode();
+        return;
+      } catch (err: any) {
+        console.warn('Google popup client initialization error, falling back to redirect:', err);
+      }
     }
+
+    // Standard Google OAuth 2.0 full-page redirect flow
+    const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/$/, '');
+    const origin = window.location.origin;
+    const returnTo = window.location.pathname === '/signin' || window.location.pathname === '/login' ? '/dashboard' : window.location.pathname;
+    window.location.href = `${apiUrl}/auth/google?origin=${encodeURIComponent(origin)}&returnTo=${encodeURIComponent(returnTo)}`;
   };
 
   // Clear fields and errors whenever modal is opened or closed

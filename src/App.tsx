@@ -8,6 +8,7 @@ import { ProtectedRoute } from './components/common/ProtectedRoute';
 // Pages
 import { LandingPage } from './pages/Landing/LandingPage';
 import { SignInPage } from './pages/Auth/SignInPage';
+import { OAuthCallbackPage } from './pages/Auth/OAuthCallbackPage';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { ExplorePage } from './pages/Explore/ExplorePage';
 import { CompanyIntelligencePage } from './pages/Company/CompanyIntelligencePage';
@@ -42,6 +43,7 @@ export function App() {
           <Route path="/login" element={<SignInPage initialMode="login" />} />
           <Route path="/signup" element={<SignInPage initialMode="register" />} />
           <Route path="/register" element={<SignInPage initialMode="register" />} />
+          <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 
           {/* App Workspace Shell Pages */}
           <Route

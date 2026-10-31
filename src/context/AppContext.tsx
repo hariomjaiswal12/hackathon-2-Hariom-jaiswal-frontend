@@ -18,8 +18,11 @@ import { INITIAL_CAREER_DNA, MOCK_COMPANIES } from '../data/mockData';
 interface AppContextType {
   // Auth
   user: User | null;
+  setUser: (user: User | null) => void;
   isAuthenticated: boolean;
+  setIsAuthenticated: (val: boolean) => void;
   isLoadingAuth: boolean;
+  loadAppData: () => Promise<void>;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   loginDemo: () => Promise<{ success: boolean; error?: string }>;
   loginGoogle: (credential: string) => Promise<{ success: boolean; error?: string }>;
@@ -375,6 +378,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const res = await apiClient.getMe();
       if (res.success && res.data) {
         setUser(res.data);
+        setIsAuthenticated(true);
       }
       await loadAppData();
     }
@@ -573,8 +577,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider
       value={{
         user,
+        setUser,
         isAuthenticated,
+        setIsAuthenticated,
         isLoadingAuth,
+        loadAppData,
         login,
         loginDemo,
         loginGoogle,

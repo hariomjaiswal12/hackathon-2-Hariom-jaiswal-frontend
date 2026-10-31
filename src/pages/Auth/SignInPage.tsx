@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
+import { apiClient } from '../../services/apiClient';
 import {
   Eye,
   EyeOff,
@@ -16,7 +17,6 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-import { apiClient } from '../../services/apiClient';
 
 // Official 4-color Google "G" SVG icon
 const GoogleIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
@@ -58,7 +58,7 @@ interface SignInPageProps {
 export const SignInPage: React.FC<SignInPageProps> = ({ initialMode = 'login' }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, register, loginDemo, user } = useApp();
+  const { login, register, loginDemo, user, reloadUserData } = useApp();
 
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>(
     initialMode === 'register' || location.pathname.includes('register') || location.pathname.includes('signup')
@@ -199,19 +199,72 @@ export const SignInPage: React.FC<SignInPageProps> = ({ initialMode = 'login' })
   const handleGoogleClick = async () => {
     setSocialLoading('google');
     setErrorMsg(null);
-    try {
-      const res = await loginDemo();
-      if (res.success) {
-        setSuccessMsg('Authenticated with Google successfully!');
-        setTimeout(() => navigate('/dashboard'), 600);
-      } else {
-        setErrorMsg('Google Sign-In failed. Please try demo access.');
-      }
-    } catch (err: any) {
-      setErrorMsg('Google authentication service unavailable.');
-    } finally {
+
+    const googleClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+    const isGoogleConfigured =
+      Boolean(googleClientId) &&
+      googleClientId !== 'your_google_oauth_client_id' &&
+      !googleClientId.startsWith('your_');
+
+    if (!isGoogleConfigured) {
       setSocialLoading(null);
+      setErrorMsg('Google OAuth is not configured with an active Client ID.');
+      return;
     }
+
+    // Attempt GIS popup client first
+    const gis = (window as any).google?.accounts?.oauth2;
+    if (gis && typeof gis.initCodeClient === 'function') {
+      try {
+        const client = gis.initCodeClient({
+          client_id: googleClientId,
+          scope: 'openid email profile',
+          ux_mode: 'popup',
+          callback: async (response: { code?: string; error?: string }) => {
+            if (response.error) {
+              setSocialLoading(null);
+              setErrorMsg(`Google sign-in was cancelled (${response.error}).`);
+              return;
+            }
+            if (!response.code) {
+              setSocialLoading(null);
+              setErrorMsg('No authorization code returned from Google.');
+              return;
+            }
+
+            try {
+              const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/$/, '');
+              const res = await fetch(`${apiUrl}/auth/google/callback?code=${encodeURIComponent(response.code)}&json=true`, {
+                headers: { Accept: 'application/json' },
+              });
+              const data = await res.json();
+              if (data.success && data.data?.tokens?.accessToken) {
+                apiClient.setToken(data.data.tokens.accessToken, data.data.tokens.refreshToken);
+                await reloadUserData();
+                setSuccessMsg('Authenticated with Google successfully!');
+                setTimeout(() => navigate('/dashboard'), 600);
+              } else {
+                setErrorMsg(data.error?.message || 'Google authentication failed on server.');
+              }
+            } catch (err: any) {
+              setErrorMsg(err.message || 'Unable to connect to authentication server.');
+            } finally {
+              setSocialLoading(null);
+            }
+          },
+        });
+        client.requestCode();
+        return;
+      } catch (err: any) {
+        console.warn('GIS popup init failed, proceeding with redirect flow:', err);
+      }
+    }
+
+    // Standard OAuth 2.0 full-page redirect flow
+    const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/$/, '');
+    const origin = window.location.origin;
+    const returnTo = '/dashboard';
+    window.location.href = `${apiUrl}/auth/google?origin=${encodeURIComponent(origin)}&returnTo=${encodeURIComponent(returnTo)}`;
   };
 
   const handleGithubClick = async () => {
