@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
@@ -15,6 +15,8 @@ import {
   Briefcase,
   Users,
   Newspaper,
+  Play,
+  Pause,
 } from 'lucide-react';
 
 export interface FeatureSlide {
@@ -178,61 +180,230 @@ interface FeatureShowcaseProps {
   onExploreDemo?: () => void;
 }
 
+const AUTOPLAY_DURATION = 5000; // 5 seconds per slide
+const GAP_PX = 14; // gap between preview cards in px
+
 export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo }) => {
   const navigate = useNavigate();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [prevIndex, setPrevIndex] = useState<number | null>(null);
-  const [isFading, setIsFading] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const showcaseRef = useRef<HTMLDivElement>(null);
   const totalSlides = FEATURE_SLIDES.length;
+
+  // Track buffer for infinite continuous sliding without jumps
+  const EXTENDED_TRACK = useMemo(() => {
+    return Array.from({ length: 60 }, (_, i) => FEATURE_SLIDES[i % totalSlides]);
+  }, [totalSlides]);
+
+  // Step counter: increments monotonically so the rail always slides smoothly forward
+  const [step, setStep] = useState(10);
+  const [prevStep, setPrevStep] = useState<number | null>(null);
+  const [isFading, setIsFading] = useState(false);
+  const [isJumping, setIsJumping] = useState(false);
+
+  // Playback & Interaction States
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isVisible, setIsVisible] = useState(true); // Default true so it starts immediately
+  const [isHovered, setIsHovered] = useState(false);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  // Measured width of the right-side preview container for pixel-perfect card sliding
+  const [railWidth, setRailWidth] = useState(380);
+
+  const showcaseRef = useRef<HTMLDivElement>(null);
+  const railContainerRef = useRef<HTMLDivElement>(null);
+  const mobileRailRef = useRef<HTMLDivElement>(null);
+  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const interactionCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Derived slide indices
+  const currentIndex = ((step % totalSlides) + totalSlides) % totalSlides;
+  const prevIndex =
+    prevStep !== null ? ((prevStep % totalSlides) + totalSlides) % totalSlides : null;
 
   const currentSlide = FEATURE_SLIDES[currentIndex];
   const CurrentIcon = currentSlide.icon;
 
-  const goToSlide = useCallback(
-    (nextIdx: number) => {
-      if (nextIdx === currentIndex) return;
-      setPrevIndex(currentIndex);
-      setCurrentIndex(nextIdx);
+  // Measure rail container width dynamically
+  useEffect(() => {
+    if (!railContainerRef.current) return;
+    const updateWidth = () => {
+      if (railContainerRef.current) {
+        const w = railContainerRef.current.getBoundingClientRect().width;
+        if (w > 0) setRailWidth(w);
+      }
+    };
+    updateWidth();
+    const ro = new ResizeObserver(() => updateWidth());
+    ro.observe(railContainerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  // Compute card dimensions: exactly 3 preview cards visible at once
+  const cardWidth = Math.max(80, (railWidth - 2 * GAP_PX) / 3);
+  const stepDistance = (railWidth + GAP_PX) / 3;
+
+  // Interaction cooldown: gives user 3.5s of focused viewing before resuming autoplay
+  const triggerInteraction = useCallback(() => {
+    setIsInteracting(true);
+    setProgress(0);
+    if (interactionCooldownRef.current) {
+      clearTimeout(interactionCooldownRef.current);
+    }
+    interactionCooldownRef.current = setTimeout(() => {
+      setIsInteracting(false);
+    }, 3500);
+  }, []);
+
+  // Slide navigation handlers
+  const handleNext = useCallback(() => {
+    setPrevStep(step);
+    setStep((prev) => prev + 1);
+    setProgress(0);
+    setIsFading(true);
+    const timer = setTimeout(() => {
+      setIsFading(false);
+      setPrevStep(null);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [step]);
+
+  const handlePrev = useCallback(() => {
+    setPrevStep(step);
+    setStep((prev) => prev - 1);
+    setProgress(0);
+    setIsFading(true);
+    const timer = setTimeout(() => {
+      setIsFading(false);
+      setPrevStep(null);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [step]);
+
+  const handleSelectOffset = useCallback(
+    (offset: number) => {
+      triggerInteraction();
+      setPrevStep(step);
+      setStep((prev) => prev + offset);
+      setProgress(0);
       setIsFading(true);
       const timer = setTimeout(() => {
         setIsFading(false);
-        setPrevIndex(null);
-      }, 450);
+        setPrevStep(null);
+      }, 600);
       return () => clearTimeout(timer);
     },
-    [currentIndex]
+    [step, triggerInteraction]
   );
 
-  const handleNext = useCallback(() => {
-    goToSlide((currentIndex + 1) % totalSlides);
-  }, [currentIndex, goToSlide, totalSlides]);
-
-  const handlePrev = useCallback(() => {
-    goToSlide((currentIndex - 1 + totalSlides) % totalSlides);
-  }, [currentIndex, goToSlide, totalSlides]);
-
-  const handleSelect = useCallback(
-    (index: number) => {
-      goToSlide(index);
+  const handleSelectIndex = useCallback(
+    (targetIdx: number) => {
+      triggerInteraction();
+      const diff = (targetIdx - currentIndex + totalSlides) % totalSlides;
+      if (diff === 0) return;
+      setPrevStep(step);
+      setStep((prev) => prev + diff);
+      setProgress(0);
+      setIsFading(true);
+      const timer = setTimeout(() => {
+        setIsFading(false);
+        setPrevStep(null);
+      }, 600);
+      return () => clearTimeout(timer);
     },
-    [goToSlide]
+    [currentIndex, totalSlides, step, triggerInteraction]
   );
 
-  // Autoplay functionality (6s interval, pause on hover)
+  // Normalize step counter silently when it grows large to maintain infinite rotation
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion || isPaused) return;
+    if (step >= 45 || step <= 5) {
+      const normalized = (step % totalSlides) + 15;
+      setIsJumping(true);
+      setStep(normalized);
+      const timer = setTimeout(() => setIsJumping(false), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [step, totalSlides]);
 
-    const interval = setInterval(() => {
-      handleNext();
-    }, 6000);
+  // Preload upcoming images for zero-lag transitions
+  useEffect(() => {
+    const nextIdx1 = (currentIndex + 1) % totalSlides;
+    const nextIdx2 = (currentIndex + 2) % totalSlides;
+    const img1 = new Image();
+    img1.src = FEATURE_SLIDES[nextIdx1].image;
+    const img2 = new Image();
+    img2.src = FEATURE_SLIDES[nextIdx2].image;
+  }, [currentIndex, totalSlides]);
 
-    return () => clearInterval(interval);
-  }, [isPaused, handleNext]);
+  // Viewport Observer: Autoplay runs when showcase is in view
+  useEffect(() => {
+    if (!showcaseRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(showcaseRef.current);
+    return () => observer.disconnect();
+  }, []);
 
-  // Keyboard navigation when section is in viewport
+  // Respect user preference for reduced motion
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mediaQuery.matches) {
+      setIsPlaying(false);
+    }
+    const handler = (e: MediaQueryListEvent) => {
+      if (e.matches) setIsPlaying(false);
+    };
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  // Main Autoplay Timer with high-accuracy Date.now() synchronization
+  useEffect(() => {
+    if (!isPlaying || !isVisible || isHovered || isInteracting) {
+      if (progressTimerRef.current) {
+        clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+      }
+      return;
+    }
+
+    const startTime = Date.now() - (progress / 100) * AUTOPLAY_DURATION;
+
+    progressTimerRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min(100, (elapsed / AUTOPLAY_DURATION) * 100);
+      setProgress(pct);
+
+      if (elapsed >= AUTOPLAY_DURATION) {
+        if (progressTimerRef.current) {
+          clearInterval(progressTimerRef.current);
+          progressTimerRef.current = null;
+        }
+        setProgress(0);
+        handleNext();
+      }
+    }, 35);
+
+    return () => {
+      if (progressTimerRef.current) {
+        clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+      }
+    };
+  }, [isPlaying, isVisible, isHovered, isInteracting, handleNext, step]);
+
+  // Center active mobile thumbnail into view
+  useEffect(() => {
+    if (!mobileRailRef.current) return;
+    const activeBtn = mobileRailRef.current.children[currentIndex] as HTMLElement;
+    if (activeBtn) {
+      activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [currentIndex]);
+
+  // Keyboard navigation when in viewport
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!showcaseRef.current) return;
@@ -242,16 +413,26 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
 
       if (e.key === 'ArrowRight') {
         e.preventDefault();
+        triggerInteraction();
         handleNext();
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
+        triggerInteraction();
         handlePrev();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handlePrev]);
+  }, [handleNext, handlePrev, triggerInteraction]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+      if (interactionCooldownRef.current) clearTimeout(interactionCooldownRef.current);
+    };
+  }, []);
 
   // CTA navigation handler
   const handleCtaClick = () => {
@@ -262,22 +443,13 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
     }
   };
 
-  // 3 upcoming cards in sequence for desktop vertical strip
-  const upcomingThumbnails = [1, 2, 3].map((offset) => {
-    const idx = (currentIndex + offset) % totalSlides;
-    return {
-      index: idx,
-      slide: FEATURE_SLIDES[idx],
-    };
-  });
-
   return (
     <section
       ref={showcaseRef}
       id="feature-showcase"
       aria-label="CompanyIQ Interactive Feature Showcase"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className="scroll-mt-24 relative py-16 sm:py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-[#070B14] text-slate-100 overflow-hidden border-t border-white/5 select-none"
     >
       {/* Ambient background glows */}
@@ -294,6 +466,12 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5 text-blue-400" />
               <span>Interactive Feature Showcase</span>
+              {isPlaying && isVisible && !isHovered && !isInteracting && (
+                <span className="ml-1 inline-flex items-center gap-1 text-[10px] text-emerald-400 font-normal lowercase tracking-normal">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  live auto-play
+                </span>
+              )}
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15]">
               Experience CompanyIQ in Action
@@ -303,20 +481,55 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
             </p>
           </div>
 
-          {/* Top-Right Navigation Controls (Exact Reference Video Style) */}
+          {/* Top-Right Navigation Controls (Exact Screenshot Style + Live Progress) */}
           <div className="flex items-center gap-3 sm:gap-4 self-start md:self-end">
-            {/* Slide counter indicator */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium text-slate-300 backdrop-blur-md">
-              <span className="font-bold text-white tracking-wider">{currentSlide.number}</span>
-              <span className="text-slate-500 font-normal">/</span>
-              <span className="text-slate-400">{totalSlides.toString().padStart(2, '0')}</span>
+            {/* Slide counter indicator with synchronized progress fill */}
+            <div className="relative overflow-hidden flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium text-slate-300 backdrop-blur-md shadow-sm">
+              {/* Background progress fill */}
+              <div
+                className="absolute inset-0 bg-blue-500/15 pointer-events-none transition-none"
+                style={{ width: `${progress}%` }}
+              />
+              {/* Bottom border progress line */}
+              <div
+                className="absolute bottom-0 left-0 h-[2.5px] bg-gradient-to-r from-blue-500 via-cyan-400 to-indigo-500 pointer-events-none transition-none shadow-[0_0_8px_rgba(59,130,246,0.6)]"
+                style={{ width: `${progress}%` }}
+              />
+              <span className="relative z-10 font-bold text-white tracking-wider">
+                {currentSlide.number}
+              </span>
+              <span className="relative z-10 text-slate-500 font-normal">/</span>
+              <span className="relative z-10 text-slate-400">
+                {totalSlides.toString().padStart(2, '0')}
+              </span>
             </div>
+
+            {/* Play / Pause Toggle Button */}
+            <button
+              type="button"
+              onClick={() => {
+                triggerInteraction();
+                setIsPlaying((prev) => !prev);
+              }}
+              aria-label={isPlaying ? 'Pause automatic presentation' : 'Play automatic presentation'}
+              title={isPlaying ? 'Pause autoplay' : 'Resume autoplay'}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/10 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-md shadow-sm hover:border-white/20"
+            >
+              {isPlaying ? (
+                <Pause className="w-4 h-4 text-blue-400" />
+              ) : (
+                <Play className="w-4 h-4 text-emerald-400 fill-emerald-400 translate-x-0.5" />
+              )}
+            </button>
 
             {/* Prev / Next buttons */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={handlePrev}
+                onClick={() => {
+                  triggerInteraction();
+                  handlePrev();
+                }}
                 aria-label="Previous feature slide"
                 className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/10 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-md shadow-sm hover:border-white/20"
               >
@@ -324,7 +537,10 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
               </button>
               <button
                 type="button"
-                onClick={handleNext}
+                onClick={() => {
+                  triggerInteraction();
+                  handleNext();
+                }}
                 aria-label="Next feature slide"
                 className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/10 text-white flex items-center justify-center transition-all cursor-pointer backdrop-blur-md shadow-sm hover:border-white/20"
               >
@@ -335,8 +551,8 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
         </div>
 
         {/* =========================================================================
-            MAIN SHOWCASE ROW (REFERENCE VIDEO COMPOSITION)
-            Desktop: Large Landscape Left (~66%) + Narrow Vertical Strip Right (~34%)
+            MAIN SHOWCASE ROW (EXACT SCREENSHOT RATIOS & SYNCHRONIZED SLIDING TRACK)
+            Desktop: Large Landscape Left (~66%) + 3 Continuously Sliding Cards Right (~34%)
         ========================================================================= */}
         <div className="relative">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch min-h-[260px] sm:min-h-[360px] md:min-h-[440px] lg:h-[500px] xl:h-[540px]">
@@ -353,13 +569,13 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
                   />
                 )}
 
-                {/* Current Slide Image (fades in smoothly) */}
+                {/* Current Slide Image (fades in smoothly with subtle zoom) */}
                 <img
                   key={currentSlide.id}
                   src={currentSlide.image}
                   alt={currentSlide.title}
-                  className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-500 ease-out ${
-                    isFading ? 'opacity-0' : 'opacity-100'
+                  className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-700 ease-out ${
+                    isFading ? 'opacity-0 scale-[1.03]' : 'opacity-100 scale-100'
                   }`}
                   loading="eager"
                 />
@@ -370,7 +586,7 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
                 {/* Ambient Highlight Border on Active Panel */}
                 <div className="absolute inset-0 rounded-2xl sm:rounded-3xl border border-blue-400/20 pointer-events-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]" />
 
-                {/* Category Badge on Bottom-Left of Main Visual (Reference Video Detail) */}
+                {/* Category Badge on Bottom-Left of Main Visual (Exact Reference Style) */}
                 <div className="relative z-10 p-4 sm:p-6 lg:p-7">
                   <div className="inline-flex items-center gap-2 sm:gap-2.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-white shadow-xl">
                     <CurrentIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
@@ -383,61 +599,98 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
               </div>
             </div>
 
-            {/* Right: Vertical Thumbnail Strip (Reference Video Style: 3 narrow cards) */}
-            <div className="hidden lg:grid lg:col-span-4 grid-cols-3 gap-3.5 h-full">
-              {upcomingThumbnails.map(({ index, slide }, slotIdx) => {
-                return (
-                  <button
-                    key={`${slide.id}-${slotIdx}`}
-                    type="button"
-                    onClick={() => handleSelect(index)}
-                    aria-label={`Switch to ${slide.title}`}
-                    className="relative group h-full rounded-2xl overflow-hidden bg-[#0c111d] border border-white/10 hover:border-blue-400/60 transition-all duration-300 hover:scale-[1.02] active:scale-98 cursor-pointer shadow-md text-left flex flex-col justify-end p-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                  >
-                    {/* Thumbnail Image - High Visibility */}
-                    <img
-                      src={slide.image}
-                      alt={slide.title}
-                      className="absolute inset-0 w-full h-full object-cover object-top opacity-85 group-hover:opacity-100 transition-opacity duration-300"
-                      loading="lazy"
-                    />
+            {/* Right: Exactly 3 Visible Vertical Preview Cards with Smooth Continuous Movement */}
+            <div
+              ref={railContainerRef}
+              className="hidden lg:block lg:col-span-4 relative h-full overflow-hidden rounded-2xl"
+            >
+              <div
+                className="flex gap-3.5 h-full"
+                style={{
+                  transform: `translateX(-${(step + 1) * stepDistance}px)`,
+                  transition: isJumping
+                    ? 'none'
+                    : 'transform 700ms cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
+              >
+                {EXTENDED_TRACK.map((slide, i) => {
+                  const isUpNext = i === step + 1;
+                  return (
+                    <button
+                      key={`rail-${i}`}
+                      type="button"
+                      onClick={() => {
+                        const offset = i - (step + 1) + 1;
+                        handleSelectOffset(offset);
+                      }}
+                      aria-label={`Switch to ${slide.title}`}
+                      style={{
+                        width: `${cardWidth}px`,
+                        flexShrink: 0,
+                      }}
+                      className={`relative group h-full rounded-2xl overflow-hidden bg-[#0c111d] border transition-all duration-300 hover:scale-[1.02] active:scale-98 cursor-pointer shadow-md text-left flex flex-col justify-end p-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
+                        isUpNext
+                          ? 'border-blue-400/90 shadow-[0_0_24px_rgba(59,130,246,0.35)] ring-1 ring-blue-500/50'
+                          : 'border-white/10 hover:border-blue-400/60'
+                      }`}
+                    >
+                      {/* Thumbnail Image - High Visibility */}
+                      <img
+                        src={slide.image}
+                        alt={slide.title}
+                        className="absolute inset-0 w-full h-full object-cover object-top opacity-85 group-hover:opacity-100 transition-opacity duration-300"
+                        loading="lazy"
+                      />
 
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#070B14]/90 via-[#070B14]/30 to-transparent group-hover:from-[#070B14]/75 transition-colors duration-300" />
+                      {/* Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#070B14]/90 via-[#070B14]/30 to-transparent group-hover:from-[#070B14]/75 transition-colors duration-300" />
 
-                    {/* Highlight outline on hover */}
-                    <div className="absolute inset-0 rounded-2xl border border-white/5 group-hover:border-blue-400/40 transition-colors pointer-events-none" />
+                      {/* Highlight outline */}
+                      <div className="absolute inset-0 rounded-2xl border border-white/5 group-hover:border-blue-400/40 transition-colors pointer-events-none" />
 
-                    {/* Thumbnail Content with glass pill at Bottom */}
-                    <div className="relative z-10 bg-black/60 backdrop-blur-xs p-2 sm:p-2.5 rounded-xl border border-white/10 space-y-0.5">
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-blue-400 tracking-wider">
-                        <span>{slide.number}</span>
+                      {/* "UP NEXT" illuminated pill on the first upcoming card */}
+                      {isUpNext && (
+                        <div className="absolute top-3 left-3 z-20">
+                          <span className="px-2 py-0.5 rounded-md bg-blue-500/90 backdrop-blur-xs text-[9px] font-bold text-white tracking-wider uppercase shadow-xs">
+                            UP NEXT
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Thumbnail Content with glass pill at Bottom */}
+                      <div className="relative z-10 bg-black/60 backdrop-blur-xs p-2 sm:p-2.5 rounded-xl border border-white/10 space-y-0.5">
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-blue-400 tracking-wider">
+                          <span>{slide.number}</span>
+                        </div>
+                        <p className="text-xs font-semibold text-white line-clamp-1 leading-snug group-hover:text-blue-200 transition-colors">
+                          {slide.title}
+                        </p>
+                        <p className="text-[10px] text-slate-400 line-clamp-1">
+                          {slide.tagline}
+                        </p>
                       </div>
-                      <p className="text-xs font-semibold text-white line-clamp-1 leading-snug group-hover:text-blue-200 transition-colors">
-                        {slide.title}
-                      </p>
-                      <p className="text-[10px] text-slate-400 line-clamp-1">
-                        {slide.tagline}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
           {/* Mobile & Tablet Horizontal Thumbnails Rail (below main visual on < lg) */}
-          <div className="lg:hidden mt-3 sm:mt-4 overflow-x-auto pb-2 scrollbar-none flex gap-2.5 sm:gap-3 snap-x snap-mandatory">
+          <div
+            ref={mobileRailRef}
+            className="lg:hidden mt-3 sm:mt-4 overflow-x-auto pb-2 scrollbar-none flex gap-2.5 sm:gap-3 snap-x snap-mandatory"
+          >
             {FEATURE_SLIDES.map((slide, idx) => {
               const isActive = idx === currentIndex;
               return (
                 <button
                   key={slide.id}
                   type="button"
-                  onClick={() => handleSelect(idx)}
+                  onClick={() => handleSelectIndex(idx)}
                   className={`relative flex-shrink-0 w-32 sm:w-40 h-24 sm:h-28 rounded-xl overflow-hidden border snap-start text-left p-2.5 flex flex-col justify-end transition-all cursor-pointer ${
                     isActive
-                      ? 'border-blue-400 ring-2 ring-blue-500/40 shadow-lg'
+                      ? 'border-blue-400 ring-2 ring-blue-500/50 shadow-lg shadow-blue-500/25 scale-[1.02]'
                       : 'border-white/10 opacity-75 hover:opacity-100'
                   }`}
                 >
@@ -463,7 +716,11 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
             Right: Prominent Working CTA Button
         ========================================================================= */}
         <div className="pt-3 sm:pt-4 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 sm:gap-6">
-          <div className="space-y-1 sm:space-y-1.5 max-w-3xl">
+          <div
+            className={`space-y-1 sm:space-y-1.5 max-w-3xl transition-all duration-500 ease-out ${
+              isFading ? 'opacity-40 translate-y-1' : 'opacity-100 translate-y-0'
+            }`}
+          >
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-blue-400 tracking-wider uppercase">
                 {currentSlide.number} — {currentSlide.category}
@@ -491,21 +748,31 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
           </div>
         </div>
 
-        {/* 10-Dot Progress Bar */}
+        {/* 10-Dot Progress Bar with Active Fill */}
         <div className="flex items-center justify-center gap-1.5 sm:gap-2 pt-1 sm:pt-2">
-          {FEATURE_SLIDES.map((slide, idx) => (
-            <button
-              key={slide.id}
-              type="button"
-              onClick={() => handleSelect(idx)}
-              aria-label={`Go to feature ${slide.number}: ${slide.title}`}
-              className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                idx === currentIndex
-                  ? 'w-7 sm:w-8 bg-blue-500 shadow-sm shadow-blue-500/50'
-                  : 'w-2 bg-white/20 hover:bg-white/40'
-              }`}
-            />
-          ))}
+          {FEATURE_SLIDES.map((slide, idx) => {
+            const isActive = idx === currentIndex;
+            return (
+              <button
+                key={slide.id}
+                type="button"
+                onClick={() => handleSelectIndex(idx)}
+                aria-label={`Go to feature ${slide.number}: ${slide.title}`}
+                className={`transition-all duration-300 cursor-pointer h-2 rounded-full overflow-hidden ${
+                  isActive
+                    ? 'w-10 sm:w-12 bg-white/10 ring-1 ring-blue-500/40 shadow-xs'
+                    : 'w-2 bg-white/20 hover:bg-white/40'
+                }`}
+              >
+                {isActive && (
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 via-cyan-400 to-indigo-500 rounded-full transition-none"
+                    style={{ width: `${progress}%` }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>

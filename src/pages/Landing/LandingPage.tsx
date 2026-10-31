@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { AuthModal } from '../../components/modals/AuthModal';
 import { PolaroidLineCarousel, type PolaroidSlide } from '../../components/ui/polaroid-line-carousel';
 import { FeatureShowcase } from '../../components/landing/FeatureShowcase';
+import { CareerDNASection } from '../../components/landing/CareerDNASection';
 import {
   Search,
   Sparkles,
@@ -1323,71 +1324,9 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          SECTION 8: CAREER IMAGE SECTION (Dark Navy Background)
+          SECTION 8: CAREER DNA SECTION (Premium AI-Powered Redesign)
       ========================================================================= */}
-      <section className="py-20 md:py-24 px-6 bg-[#070B14] border-t border-white/5 text-slate-100 relative overflow-hidden">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div className="rounded-2xl overflow-hidden shadow-2xl border border-white/10">
-              <img
-                src="/career_photo_exact.png"
-                alt="Two colleagues reviewing company research together"
-                className="w-full h-[320px] sm:h-[420px] object-cover"
-              />
-            </div>
-
-            <div className="space-y-6">
-              <p className="text-blue-400 text-[11px] font-semibold uppercase tracking-[0.16em]">
-                Career DNA
-              </p>
-              <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight leading-[1.12]">
-                Your career
-                <br />
-                is personal.
-                <br />
-                Your research
-                <br />
-                should be, too.
-              </h2>
-              <p className="text-slate-400 text-[15px] leading-relaxed max-w-md">
-                Tell CompanyIQ what matters to you. Then see how each company lines up with your priorities.
-              </p>
-              <div className="space-y-4 pt-1">
-                <div className="flex items-start gap-3">
-                  <SlidersHorizontal size={18} className="text-blue-400 shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Weighted priorities</h3>
-                    <p className="text-[13px] text-slate-400 mt-0.5">Salary, growth, culture, balance, and more.</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <UserRound size={18} className="text-blue-400 shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Personal fit</h3>
-                    <p className="text-[13px] text-slate-400 mt-0.5">A fit view shaped by your preferences.</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Scale size={18} className="text-blue-400 shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Clear tradeoffs</h3>
-                    <p className="text-[13px] text-slate-400 mt-0.5">See what you gain and what you give up.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="pt-2 space-y-3">
-                <button
-                  onClick={() => navigate('/career-dna/build')}
-                  className="px-5 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-lg shadow-blue-600/30 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
-                >
-                  Build Your Career DNA
-                </button>
-                <p className="text-xs text-slate-500">Takes about 2 minutes · 6 preferences</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <CareerDNASection />
 
       {/* =========================================================================
           SECTION 9: TRANSPARENCY SECTION (Light Background)
