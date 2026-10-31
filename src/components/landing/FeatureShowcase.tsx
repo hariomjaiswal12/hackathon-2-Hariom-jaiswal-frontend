@@ -241,9 +241,9 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
     return () => ro.disconnect();
   }, []);
 
-  // Compute card dimensions: exactly 3 preview cards visible at once
-  const cardWidth = Math.max(80, (railWidth - 2 * GAP_PX) / 3);
-  const stepDistance = (railWidth + GAP_PX) / 3;
+  // Compute card dimensions: comfortable, wide portrait preview cards (matching reference video)
+  const cardWidth = Math.max(190, Math.min(235, Math.floor((railWidth - GAP_PX) / 2.2)));
+  const stepDistance = cardWidth + GAP_PX;
 
   // Reset slide timer and start fresh 5s countdown
   const resetSlideTimer = useCallback(() => {
@@ -584,8 +584,8 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
         ========================================================================= */}
         <div className="relative">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch min-h-[260px] sm:min-h-[360px] md:min-h-[440px] lg:h-[500px] xl:h-[540px]">
-            {/* Left: Main Large Landscape Visual Panel (~66% width on lg) */}
-            <div className="lg:col-span-8 relative group">
+            {/* Left: Main Large Landscape Visual Panel (~58% width on lg) */}
+            <div className="lg:col-span-7 relative group">
               <div className="relative w-full h-full min-h-[240px] sm:min-h-[340px] md:min-h-[400px] lg:min-h-full rounded-2xl sm:rounded-3xl overflow-hidden bg-[#0c111d] border border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] flex flex-col justify-end">
                 {/* Previous Slide Image (stays behind for flicker-free crossfade) */}
                 {prevIndex !== null && (
@@ -627,10 +627,10 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
               </div>
             </div>
 
-            {/* Right: Exactly 3 Visible Vertical Preview Cards with Smooth Continuous Movement */}
+            {/* Right: Generously Sized Preview Cards with Continuous Conveyor Sliding (~42% width on lg) */}
             <div
               ref={railContainerRef}
-              className="hidden lg:block lg:col-span-4 relative h-full overflow-hidden rounded-2xl"
+              className="hidden lg:block lg:col-span-5 relative h-full overflow-hidden rounded-2xl"
             >
               <div
                 className="flex gap-3.5 h-full"
@@ -662,16 +662,16 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
                           : 'border-white/10 hover:border-blue-400/60'
                       }`}
                     >
-                      {/* Thumbnail Image - High Visibility */}
+                      {/* Thumbnail Image - High Visibility, Crisp Centered UI */}
                       <img
                         src={slide.image}
                         alt={slide.title}
-                        className="absolute inset-0 w-full h-full object-cover object-center opacity-95 group-hover:opacity-100 transition-all duration-300"
+                        className="absolute inset-0 w-full h-full object-cover object-[center_15%] opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 brightness-105 contrast-[1.05]"
                         loading="lazy"
                       />
 
-                      {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#070B14]/80 via-transparent to-transparent group-hover:from-[#070B14]/60 transition-colors duration-300" />
+                      {/* Gentle Gradient Overlay Protecting Bottom Text while keeping UI bright */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#070B14]/90 via-[#070B14]/30 to-transparent pointer-events-none group-hover:from-[#070B14]/75 transition-colors duration-300" />
 
                       {/* Highlight outline */}
                       <div className="absolute inset-0 rounded-2xl border border-white/5 group-hover:border-blue-400/40 transition-colors pointer-events-none" />
@@ -679,28 +679,33 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
                       {/* "UP NEXT" illuminated pill on the first upcoming card */}
                       {isUpNext && (
                         <div className="absolute top-3 left-3 z-20">
-                          <span className="px-2 py-0.5 rounded-md bg-blue-500/90 backdrop-blur-xs text-[9px] font-bold text-white tracking-wider uppercase shadow-xs">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-blue-600/90 backdrop-blur-md text-[9px] font-bold text-white tracking-wider uppercase shadow-lg shadow-blue-600/30 border border-blue-400/40">
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse" />
                             UP NEXT
                           </span>
                         </div>
                       )}
 
                       {/* Thumbnail Content with glass pill at Bottom */}
-                      <div className="relative z-10 bg-black/60 backdrop-blur-xs p-2 sm:p-2.5 rounded-xl border border-white/10 space-y-0.5">
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-blue-400 tracking-wider">
+                      <div className="relative z-10 bg-[#0c111d]/90 backdrop-blur-md p-2.5 sm:p-3 rounded-xl border border-white/10 space-y-0.5 shadow-lg">
+                        <div className="flex items-center justify-between text-[10px] font-bold text-blue-400 tracking-wider">
                           <span>{slide.number}</span>
+                          <span className="text-[9px] font-medium text-slate-400 uppercase tracking-normal">{slide.tagline}</span>
                         </div>
-                        <p className="text-xs font-semibold text-white line-clamp-1 leading-snug group-hover:text-blue-200 transition-colors">
+                        <p className="text-xs sm:text-sm font-semibold text-white truncate leading-snug group-hover:text-blue-300 transition-colors">
                           {slide.title}
                         </p>
-                        <p className="text-[10px] text-slate-400 line-clamp-1">
-                          {slide.tagline}
+                        <p className="text-[10px] text-slate-400 truncate">
+                          {slide.subtitle}
                         </p>
                       </div>
                     </button>
                   );
                 })}
               </div>
+
+              {/* Right Edge Soft Fade Mask */}
+              <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-[#070B14] to-transparent pointer-events-none z-20" />
             </div>
           </div>
 

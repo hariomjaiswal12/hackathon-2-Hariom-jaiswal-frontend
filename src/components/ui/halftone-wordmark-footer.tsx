@@ -197,17 +197,19 @@ export function HalftoneWordmarkFooter({
       const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
       if (!offCtx) return;
 
-      // Calculate responsive font size to span almost the entire footer width (~94%)
-      const targetWidth = intWidth * 0.94;
-      let fontSize = Math.floor(intWidth * 0.22); // Initial estimate
-      const fontFamily = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      // Calculate responsive font size to span almost the entire footer width (~92%), bounded by canvas height
+      const targetWidth = intWidth * 0.92;
+      const maxFontByHeight = Math.floor(intHeight * 0.68);
+      let fontSize = Math.min(Math.floor(intWidth * 0.20), maxFontByHeight);
+      const fontFamily = '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
       offCtx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
       let textMetrics = offCtx.measureText(wordmark);
       if (textMetrics.width > 0) {
         fontSize = Math.floor(fontSize * (targetWidth / textMetrics.width));
-        // Clamp min and max font size
-        fontSize = Math.max(fontSize, 36);
+        // Clamp min and max font size so letters never clip vertically or horizontally
+        fontSize = Math.min(fontSize, maxFontByHeight);
+        fontSize = Math.max(fontSize, 32);
         offCtx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
       }
 
@@ -216,7 +218,7 @@ export function HalftoneWordmarkFooter({
       offCtx.fillStyle = '#ffffff';
 
       // Centered vertically in the canvas so all letters & descenders are prominent
-      const centerY = Math.floor(intHeight * 0.52);
+      const centerY = Math.floor(intHeight * 0.50);
       const centerX = Math.floor(intWidth / 2);
 
       offCtx.fillText(wordmark, centerX, centerY);
@@ -236,7 +238,7 @@ export function HalftoneWordmarkFooter({
           const alpha = data[index + 3];
 
           // If pixel has text alpha
-          if (alpha > 40) {
+          if (alpha > 30) {
             const alphaRatio = alpha / 255;
             // Radius based on alpha/brightness
             const baseRadius = Math.max(1.15, effectiveDotGap * 0.38 * alphaRatio);
@@ -253,6 +255,14 @@ export function HalftoneWordmarkFooter({
             });
           }
         }
+      }
+
+      // Safeguard: if for any reason particles array is empty, retry safely
+      if (particles.length === 0) {
+        setTimeout(() => {
+          initParticles();
+          render();
+        }, 60);
       }
     };
 
@@ -371,7 +381,17 @@ export function HalftoneWordmarkFooter({
       });
     }
 
-    // IntersectionObserver to pause loop when offscreen
+    // Safety re-checks after layout reflow
+    const safetyTimer1 = setTimeout(() => {
+      initParticles();
+      render();
+    }, 120);
+    const safetyTimer2 = setTimeout(() => {
+      initParticles();
+      render();
+    }, 450);
+
+    // IntersectionObserver to pause loop when offscreen (with 350px rootMargin so it activates early)
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
@@ -385,7 +405,7 @@ export function HalftoneWordmarkFooter({
           cancelAnimationFrame(animFrameId);
         }
       },
-      { threshold: 0 }
+      { threshold: 0, rootMargin: '350px' }
     );
 
     observer.observe(canvasContainer);
@@ -468,6 +488,8 @@ export function HalftoneWordmarkFooter({
     return () => {
       cancelAnimationFrame(animFrameId);
       clearTimeout(resizeTimer);
+      clearTimeout(safetyTimer1);
+      clearTimeout(safetyTimer2);
       observer.disconnect();
       resizeObserver.disconnect();
       canvas.removeEventListener('pointermove', handlePointerMove);
