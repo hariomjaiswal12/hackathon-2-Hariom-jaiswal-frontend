@@ -5,6 +5,7 @@ import { AuthModal } from '../../components/modals/AuthModal';
 import { PolaroidLineCarousel, type PolaroidSlide } from '../../components/ui/polaroid-line-carousel';
 import { FeatureShowcase } from '../../components/landing/FeatureShowcase';
 import { CareerDNASection } from '../../components/landing/CareerDNASection';
+import { CompareSection } from '../../components/landing/CompareSection';
 import {
   Search,
   Sparkles,
@@ -1193,135 +1194,9 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          SECTION 7: COMPANY COMPARISON SECTION (Light Background)
+          SECTION 7: COMPANY COMPARISON SECTION (Redesigned Interactive Dashboard)
       ========================================================================= */}
-      <section
-        id="compare"
-        ref={compareSectionRef}
-        className="scroll-mt-20 py-24 md:py-28 px-6 bg-white text-slate-900 border-t border-slate-100 relative"
-      >
-        <div className="max-w-6xl mx-auto space-y-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
-            <div className="lg:col-span-7 space-y-4">
-              <p className="text-blue-600 text-[11px] font-semibold uppercase tracking-[0.16em]">
-                Compare
-              </p>
-              <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-bold tracking-tight text-slate-900 leading-[1.15]">
-                Compare companies.
-                <br />
-                Not just ratings.
-              </h2>
-            </div>
-            <div className="lg:col-span-5">
-              <p className="text-slate-500 text-sm sm:text-[15px] leading-relaxed">
-                See where companies differ across the categories that matter to your decision.
-              </p>
-            </div>
-          </div>
-
-          {/* Interactive Comparison Table Card */}
-          <div
-            className="rounded-2xl bg-white border border-slate-200 shadow-[0_8px_30px_rgba(15,23,42,0.06)] overflow-x-auto"
-            onMouseLeave={() => setHoveredCompany(null)}
-          >
-            {/* Table Header Row */}
-            <div className="grid grid-cols-12 min-w-[720px] border-b border-slate-200 bg-slate-50/40 px-4 sm:px-6 py-5 items-center">
-              <div className="col-span-3" />
-
-              {/* Google Column Header */}
-              <div
-                onMouseEnter={() => setHoveredCompany('google')}
-                className={`col-span-3 p-3 rounded-xl transition-all cursor-pointer ${
-                  hoveredCompany === 'google'
-                    ? 'bg-blue-50/80 shadow-xs border border-blue-200'
-                    : 'hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-md bg-white p-1 shadow-xs flex items-center justify-center">
-                    <span className="font-bold text-xs text-blue-600">G</span>
-                  </div>
-                  <span className="font-bold text-sm text-slate-900">Google</span>
-                </div>
-                <p className="mt-1 text-2xl font-bold text-slate-900 tracking-tight">88</p>
-              </div>
-
-              {/* Microsoft Column Header */}
-              <div
-                onMouseEnter={() => setHoveredCompany('microsoft')}
-                className={`col-span-3 p-3 rounded-xl transition-all cursor-pointer ${
-                  hoveredCompany === 'microsoft'
-                    ? 'bg-blue-50/80 shadow-xs border border-blue-200'
-                    : 'hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-md bg-white p-1 shadow-xs flex items-center justify-center">
-                    <span className="font-bold text-xs text-indigo-600">M</span>
-                  </div>
-                  <span className="font-bold text-sm text-slate-900">Microsoft</span>
-                </div>
-                <p className="mt-1 text-2xl font-bold text-slate-900 tracking-tight">84</p>
-              </div>
-
-              {/* Adobe Column Header */}
-              <div
-                onMouseEnter={() => setHoveredCompany('adobe')}
-                className={`col-span-3 p-3 rounded-xl transition-all cursor-pointer ${
-                  hoveredCompany === 'adobe'
-                    ? 'bg-blue-50/80 shadow-xs border border-blue-200'
-                    : 'hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-md bg-white p-1 shadow-xs flex items-center justify-center">
-                    <span className="font-bold text-xs text-red-600">A</span>
-                  </div>
-                  <span className="font-bold text-sm text-slate-900">Adobe</span>
-                </div>
-                <p className="mt-1 text-2xl font-bold text-slate-900 tracking-tight">86</p>
-              </div>
-            </div>
-
-            {COMPARE_ROWS.map((row) => (
-              <div
-                key={row.label}
-                className="grid grid-cols-12 min-w-[720px] px-4 sm:px-6 py-3.5 items-center border-b border-slate-100"
-              >
-                <div className="col-span-3 text-sm text-slate-600">{row.label}</div>
-                {row.scores.map((score, scoreIndex) => (
-                  <div key={row.label + scoreIndex} className="col-span-3 px-3">
-                    <div className="h-1.5 w-full max-w-[140px] bg-slate-100 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-1000 ease-out ${signalBarClass(score)}`}
-                        style={{ width: compareVisible ? `${score}%` : '0%' }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-
-            <div className="px-4 sm:px-6 py-4 border-t border-slate-100 flex flex-wrap items-center gap-5 text-[12px] text-slate-500">
-              <span className="inline-flex items-center gap-2">
-                <span className="w-8 h-1.5 rounded-full bg-[#1D4ED8]" />
-                Strong signal
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <span className="w-8 h-1.5 rounded-full bg-[#60A5FA]" />
-                Mixed signal
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <span className="w-8 h-1.5 rounded-full bg-[#CBD5E1]" />
-                Insufficient data
-              </span>
-            </div>
-            <p className="px-4 sm:px-6 pb-5 text-[12px] text-slate-400">
-              Scores shown are illustrative. CompanyIQ separates strong evidence from mixed or missing signals.
-            </p>
-          </div>
-        </div>
-      </section>
+      <CompareSection />
 
       {/* =========================================================================
           SECTION 8: CAREER DNA SECTION (Premium AI-Powered Redesign)

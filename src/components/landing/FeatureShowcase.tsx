@@ -508,7 +508,10 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
           {/* Top-Right Navigation Controls (Exact Screenshot Style + Live Progress) */}
           <div className="flex items-center gap-3 sm:gap-4 self-start md:self-end">
             {/* Slide counter indicator with synchronized progress fill */}
-            <div className="relative overflow-hidden flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium text-slate-300 backdrop-blur-md shadow-sm">
+            <div
+              id="showcase-slide-counter"
+              className="relative overflow-hidden flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium text-slate-300 backdrop-blur-md shadow-sm"
+            >
               {/* Background progress fill */}
               <div
                 className="absolute inset-0 bg-blue-500/15 pointer-events-none transition-none"
@@ -530,6 +533,7 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
 
             {/* Play / Pause Toggle Button */}
             <button
+              id="showcase-play-pause-btn"
               type="button"
               onClick={() => {
                 triggerInteraction();
@@ -752,7 +756,7 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
               <span className="text-slate-600">·</span>
               <span className="text-xs text-slate-400 font-medium">{currentSlide.subtitle}</span>
             </div>
-            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">
+            <h3 id="showcase-active-title" className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">
               {currentSlide.title}
             </h3>
             <p className="text-slate-300 text-xs sm:text-sm md:text-[15px] leading-relaxed">
