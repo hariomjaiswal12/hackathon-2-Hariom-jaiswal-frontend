@@ -180,14 +180,14 @@ interface FeatureShowcaseProps {
   onExploreDemo?: () => void;
 }
 
-const AUTOPLAY_DURATION = 5000; // 5 seconds per slide
+const AUTOPLAY_DURATION = 5000; // Exact 5 seconds per slide
 const GAP_PX = 14; // gap between preview cards in px
 
 export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo }) => {
   const navigate = useNavigate();
   const totalSlides = FEATURE_SLIDES.length;
 
-  // Track buffer for infinite continuous sliding without jumps
+  // Track buffer for infinite smooth sliding on desktop rail
   const EXTENDED_TRACK = useMemo(() => {
     return Array.from({ length: 60 }, (_, i) => FEATURE_SLIDES[i % totalSlides]);
   }, [totalSlides]);
@@ -200,7 +200,7 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
 
   // Playback & Interaction States
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isVisible, setIsVisible] = useState(true); // Default true so it starts immediately
+  const [isVisible, setIsVisible] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -211,6 +211,10 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
   const showcaseRef = useRef<HTMLDivElement>(null);
   const railContainerRef = useRef<HTMLDivElement>(null);
   const mobileRailRef = useRef<HTMLDivElement>(null);
+  
+  // Real-time slide timer refs
+  const slideStartTimeRef = useRef<number>(Date.now());
+  const pausedElapsedRef = useRef<number>(0);
   const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const interactionCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -241,49 +245,58 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
   const cardWidth = Math.max(80, (railWidth - 2 * GAP_PX) / 3);
   const stepDistance = (railWidth + GAP_PX) / 3;
 
+  // Reset slide timer and start fresh 5s countdown
+  const resetSlideTimer = useCallback(() => {
+    slideStartTimeRef.current = Date.now();
+    pausedElapsedRef.current = 0;
+    setProgress(0);
+  }, []);
+
   // Interaction cooldown: gives user 3.5s of focused viewing before resuming autoplay
   const triggerInteraction = useCallback(() => {
     setIsInteracting(true);
-    setProgress(0);
+    resetSlideTimer();
     if (interactionCooldownRef.current) {
       clearTimeout(interactionCooldownRef.current);
     }
     interactionCooldownRef.current = setTimeout(() => {
       setIsInteracting(false);
+      resetSlideTimer();
     }, 3500);
-  }, []);
+  }, [resetSlideTimer]);
 
-  // Slide navigation handlers
+  // Transition to next slide
   const handleNext = useCallback(() => {
+    resetSlideTimer();
     setPrevStep(step);
     setStep((prev) => prev + 1);
-    setProgress(0);
     setIsFading(true);
     const timer = setTimeout(() => {
       setIsFading(false);
       setPrevStep(null);
     }, 600);
     return () => clearTimeout(timer);
-  }, [step]);
+  }, [step, resetSlideTimer]);
 
+  // Transition to previous slide
   const handlePrev = useCallback(() => {
+    resetSlideTimer();
     setPrevStep(step);
     setStep((prev) => prev - 1);
-    setProgress(0);
     setIsFading(true);
     const timer = setTimeout(() => {
       setIsFading(false);
       setPrevStep(null);
     }, 600);
     return () => clearTimeout(timer);
-  }, [step]);
+  }, [step, resetSlideTimer]);
 
+  // Select by rail offset
   const handleSelectOffset = useCallback(
     (offset: number) => {
       triggerInteraction();
       setPrevStep(step);
       setStep((prev) => prev + offset);
-      setProgress(0);
       setIsFading(true);
       const timer = setTimeout(() => {
         setIsFading(false);
@@ -294,6 +307,7 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
     [step, triggerInteraction]
   );
 
+  // Select by absolute slide index (e.g. from 10-dot indicator)
   const handleSelectIndex = useCallback(
     (targetIdx: number) => {
       triggerInteraction();
@@ -301,7 +315,6 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
       if (diff === 0) return;
       setPrevStep(step);
       setStep((prev) => prev + diff);
-      setProgress(0);
       setIsFading(true);
       const timer = setTimeout(() => {
         setIsFading(false);
@@ -359,9 +372,13 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
 
-  // Main Autoplay Timer with high-accuracy Date.now() synchronization
+  // High-Precision Autoplay Engine with Exact Date.now() Timestamping
   useEffect(() => {
-    if (!isPlaying || !isVisible || isHovered || isInteracting) {
+    const shouldRun = isPlaying && isVisible && !isHovered && !isInteracting;
+
+    if (!shouldRun) {
+      // Record elapsed time before pause
+      pausedElapsedRef.current = Date.now() - slideStartTimeRef.current;
       if (progressTimerRef.current) {
         clearInterval(progressTimerRef.current);
         progressTimerRef.current = null;
@@ -369,20 +386,27 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
       return;
     }
 
-    const startTime = Date.now() - (progress / 100) * AUTOPLAY_DURATION;
+    // Resume from where it was paused
+    slideStartTimeRef.current = Date.now() - pausedElapsedRef.current;
+    pausedElapsedRef.current = 0;
 
     progressTimerRef.current = setInterval(() => {
-      const elapsed = Date.now() - startTime;
+      const elapsed = Date.now() - slideStartTimeRef.current;
       const pct = Math.min(100, (elapsed / AUTOPLAY_DURATION) * 100);
       setProgress(pct);
 
       if (elapsed >= AUTOPLAY_DURATION) {
-        if (progressTimerRef.current) {
-          clearInterval(progressTimerRef.current);
-          progressTimerRef.current = null;
-        }
+        // Advance exactly 1 slide and restart timer cleanly
+        slideStartTimeRef.current = Date.now();
+        pausedElapsedRef.current = 0;
         setProgress(0);
-        handleNext();
+        setPrevStep(step);
+        setStep((prev) => prev + 1);
+        setIsFading(true);
+        setTimeout(() => {
+          setIsFading(false);
+          setPrevStep(null);
+        }, 600);
       }
     }, 35);
 
@@ -392,7 +416,7 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ onExploreDemo 
         progressTimerRef.current = null;
       }
     };
-  }, [isPlaying, isVisible, isHovered, isInteracting, handleNext, step]);
+  }, [isPlaying, isVisible, isHovered, isInteracting, step]);
 
   // Center active mobile thumbnail into view
   useEffect(() => {
